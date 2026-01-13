@@ -1,195 +1,301 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  collection,
-  query,
-  where,
-  getDocs,
-  updateDoc,
-  doc,
-  getDoc,
-  addDoc,
-  serverTimestamp,
+import { useRouter } from "next/navigation";
+import { 
+  collection, query, where, getDocs, 
+  updateDoc, doc, getDoc, setDoc, serverTimestamp 
 } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { db, auth } from "@/lib/firebase";
 
+import GlobalNotification from "@/app/components/GlobalNotification";
+import BusinessNavbar from "@/app/components/BusinessNavbar";
+import { 
+  Plus, 
+  Settings2, 
+  MessageSquare, 
+  CheckCircle2, 
+  XCircle, 
+  Layers, 
+  TrendingUp,
+  Sparkles
+} from "lucide-react";
+
 export default function BusinessDashboard() {
+  const router = useRouter();
   const [campaigns, setCampaigns] = useState([]);
   const [applications, setApplications] = useState({});
   const [loading, setLoading] = useState(true);
-  const [creating, setCreating] = useState(false);
+  const [businessProfile, setBusinessProfile] = useState(null);
 
-  // ✅ CREATE CAMPAIGN
-  const createCampaign = async (user) => {
+  // ✅ START CONVERSATION FUNCTION
+  const startConversation = async (creatorId, campaignId, creatorName) => {
+    const businessId = auth.currentUser.uid;
+    const chatId = `${businessId}_${creatorId}_${campaignId}`;
+
     try {
-      setCreating(true);
-
-      const docRef = await addDoc(collection(db, "campaigns"), {
-        title: "Instagram Brand Awareness",
-        description: "Create 1 reel and 2 story posts promoting our product",
-        platform: "Instagram",
-        budget: 75000,
-        status: "active",
-        businessId: user.uid,
+      const chatRef = doc(db, "chats", chatId);
+      const chatData = {
+        chatId: chatId,
+        participants: [businessId, creatorId],
+        businessId: businessId,
+        creatorId: creatorId,
+        campaignId: campaignId,
+        businessName: businessProfile.companyName,
+        creatorName: creatorName,
+        lastMessage: "Conversation started",
+        updatedAt: serverTimestamp(),
         createdAt: serverTimestamp(),
-      });
-
-      setCampaigns((prev) => [
-        {
-          id: docRef.id,
-          title: "Instagram Brand Awareness",
-          description: "Create 1 reel and 2 story posts promoting our product",
-          platform: "Instagram",
-          budget: 75000,
-          status: "active",
-        },
-        ...prev,
-      ]);
+      };
+      
+      await setDoc(chatRef, chatData, { merge: true });
+      router.push(`/dashboard/chat/${chatId}`);
     } catch (err) {
-      console.error("Create campaign error:", err);
-    } finally {
-      setCreating(false);
+      console.error("❌ Chat initiation error:", err);
     }
   };
 
-  // ✅ FETCH DATA (AUTH-SAFE)
+  // ✅ TOGGLE CAMPAIGN STATUS
+  const toggleCampaignStatus = async (campaignId, currentStatus) => {
+    const newStatus = currentStatus === "active" ? "inactive" : "active";
+    try {
+      await updateDoc(doc(db, "campaigns", campaignId), { status: newStatus });
+      setCampaigns(prev => prev.map(c => c.id === campaignId ? { ...c, status: newStatus } : c));
+    } catch (err) {
+      console.error("Status update error:", err);
+    }
+  };
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        setLoading(false);
-        return;
-      }
+      if (!user) return router.push("/login");
 
       try {
-        // Fetch campaigns
-        const q = query(
-          collection(db, "campaigns"),
-          where("businessId", "==", user.uid)
-        );
+        const bizSnap = await getDoc(doc(db, "businesses", user.uid));
+        if (!bizSnap.exists()) {
+          setLoading(false);
+          return; 
+        }
+        setBusinessProfile(bizSnap.data());
 
+        const q = query(collection(db, "campaigns"), where("businessId", "==", user.uid));
         const snap = await getDocs(q);
-        const campaignList = snap.docs.map((d) => ({
-          id: d.id,
-          ...d.data(),
-        }));
+        const campaignList = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         setCampaigns(campaignList);
 
-        // Fetch applications
-        const apps = {};
-
-        for (const c of campaignList) {
-          const appQuery = query(
-            collection(db, "applications"),
-            where("campaignId", "==", c.id)
-          );
+        if (campaignList.length > 0) {
+          const appsMap = {};
+          const appQuery = query(collection(db, "applications"), where("businessId", "==", user.uid));
           const appSnap = await getDocs(appQuery);
-
-          apps[c.id] = [];
 
           for (const a of appSnap.docs) {
             const appData = a.data();
+            const creatorSnap = await getDoc(doc(db, "creators", appData.creatorId));
+            const creatorData = creatorSnap.exists() ? creatorSnap.data() : { name: "Unknown Creator" };
 
-            const creatorSnap = await getDoc(
-              doc(db, "creators", appData.creatorId)
-            );
-
-            const creatorData = creatorSnap.exists()
-              ? creatorSnap.data()
-              : { name: "Unknown", skills: [] };
-
-            apps[c.id].push({
-              id: a.id,
-              ...appData,
-              creatorData,
-            });
+            if (!appsMap[appData.campaignId]) appsMap[appData.campaignId] = [];
+            appsMap[appData.campaignId].push({ id: a.id, ...appData, creatorData });
           }
+          setApplications(appsMap);
         }
-
-        setApplications(apps);
       } catch (err) {
-        console.error("Business dashboard error:", err);
+        console.error("Dashboard error:", err);
       } finally {
         setLoading(false);
       }
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [router]);
 
-  if (loading) {
+  const handleUpdateStatus = async (campaignId, appId, newStatus) => {
+    try {
+      await updateDoc(doc(db, "applications", appId), { status: newStatus });
+      setApplications(prev => ({
+        ...prev,
+        [campaignId]: prev[campaignId].map(app => 
+          app.id === appId ? { ...app, status: newStatus } : app
+        )
+      }));
+    } catch (err) {
+      console.error("Error updating status:", err);
+    }
+  };
+
+  if (loading) return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-white">
+      <div className="h-10 w-10 bg-black rounded flex items-center justify-center animate-pulse mb-4">
+        <Sparkles className="h-6 w-6 text-[#a3dcf3]" />
+      </div>
+      <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Syncing Portfolio...</p>
+    </div>
+  );
+
+  if (!businessProfile) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        Loading business dashboard...
+      <div className="flex flex-col items-center justify-center h-screen bg-white px-4 text-center">
+        <h1 className="text-4xl font-bold text-gray-900 mb-4 tracking-tighter uppercase">Deployment Pending</h1>
+        <p className="text-gray-500 text-sm mb-8 max-w-xs">Your business profile requires initialization before campaign deployment.</p>
+        <button 
+          onClick={() => router.push("/dashboard/business/setup")} 
+          className="bg-black text-white px-8 py-4 rounded-lg font-bold uppercase text-xs tracking-widest hover:bg-gray-800 transition-all"
+        >
+          Initialize Setup
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="max-w-5xl mx-auto mt-10 space-y-10">
-      <button
-        onClick={() => createCampaign(auth.currentUser)}
-        disabled={creating}
-        className="bg-black text-white px-5 py-2 rounded-lg font-semibold"
-      >
-        {creating ? "Creating..." : "Create Test Campaign"}
-      </button>
+    <div className="min-h-screen bg-[#F9FAFB] text-gray-900">
+      <GlobalNotification targetType="businesses" />
+      <BusinessNavbar companyName={businessProfile.companyName} />
 
-      {campaigns.map((c) => (
-        <div key={c.id} className="border p-6 rounded shadow">
-          <h2 className="text-xl font-bold mb-2">{c.title}</h2>
-          <p className="mb-4">{c.description}</p>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        
+        {/* HEADER SECTION */}
+        <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-gray-200 pb-10">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+                <Layers className="h-4 w-4 text-gray-400" />
+                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Management Console</span>
+            </div>
+            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900">
+                Active <span className="text-gray-400">Campaigns.</span>
+            </h1>
+          </div>
+          <button 
+            onClick={() => router.push("/dashboard/business/create-campaign")} 
+            className="bg-black text-white px-8 py-4 rounded-lg font-bold text-xs uppercase tracking-widest shadow-lg hover:bg-gray-800 transition-all flex items-center gap-2"
+          >
+            <Plus className="h-4 w-4" /> New Campaign
+          </button>
+        </div>
 
-          <h3 className="font-semibold mb-2">Applicants</h3>
-
-          {applications[c.id]?.length ? (
-            <div className="space-y-2">
-              {applications[c.id].map((a) => (
-                <div
-                  key={a.id}
-                  className="flex justify-between items-center border p-3 rounded"
-                >
-                  <div>
-                    <p className="font-medium">{a.creatorData.name}</p>
-                    <p className="text-sm">
-                      Skills: {a.creatorData.skills?.join(", ")}
-                    </p>
-                    <p className="text-sm italic">Status: {a.status}</p>
-                  </div>
-
-                  {a.status === "pending" && (
-                    <div className="space-x-2">
-                      <button
-                        onClick={() =>
-                          updateDoc(doc(db, "applications", a.id), {
-                            status: "accepted",
-                          })
-                        }
-                        className="bg-[#a3dcf3] px-3 py-1 rounded font-semibold"
-                      >
-                        Accept
-                      </button>
-                      <button
-                        onClick={() =>
-                          updateDoc(doc(db, "applications", a.id), {
-                            status: "rejected",
-                          })
-                        }
-                        className="bg-gray-300 px-3 py-1 rounded font-semibold"
-                      >
-                        Reject
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ))}
+        {/* CAMPAIGNS LIST */}
+        <div className="space-y-12">
+          {campaigns.length === 0 ? (
+            <div className="bg-white border border-gray-200 rounded-2xl p-20 text-center">
+              <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">No active deployments found</p>
             </div>
           ) : (
-            <p>No applicants yet.</p>
+            campaigns.map((c) => (
+              <div 
+                key={c.id} 
+                className={`bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden transition-all ${c.status === 'inactive' ? 'opacity-60' : ''}`}
+              >
+                {/* Campaign Info Bar */}
+                <div className="p-6 sm:p-8 border-b border-gray-100 bg-white">
+                  <div className="flex flex-col lg:flex-row justify-between items-start gap-8">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-4">
+                        <span className="bg-gray-900 text-white px-3 py-1 rounded text-[10px] font-bold uppercase tracking-tighter">{c.platform}</span>
+                        <span className={`px-3 py-1 rounded text-[10px] font-bold uppercase tracking-tighter border ${
+                            c.status === 'active' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-gray-50 text-gray-500 border-gray-200'
+                        }`}>
+                            {c.status}
+                        </span>
+                      </div>
+                      <h2 className="text-3xl font-bold text-gray-900 tracking-tight mb-2">{c.title}</h2>
+                      <p className="text-gray-500 text-sm max-w-3xl leading-relaxed">{c.description}</p>
+                    </div>
+                    
+                    <div className="w-full lg:w-auto flex flex-row lg:flex-col items-center lg:items-end justify-between lg:justify-start gap-4 p-4 lg:p-0 bg-gray-50 lg:bg-transparent rounded-xl">
+                        <div className="text-left lg:text-right">
+                            <p className="text-[10px] font-bold text-gray-400 uppercase">Total Budget</p>
+                            <p className="text-2xl font-black text-gray-900">₦{c.budget?.toLocaleString()}</p>
+                        </div>
+                        <button 
+                            onClick={() => toggleCampaignStatus(c.id, c.status)} 
+                            className="flex items-center gap-2 text-[10px] font-bold uppercase py-2 px-3 bg-white border border-gray-200 rounded-md hover:border-black transition-all"
+                        >
+                            <Settings2 className="h-3 w-3" /> Status
+                        </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Applications Table-Style Section */}
+                <div className="bg-white p-6 sm:p-8">
+                  <div className="flex items-center gap-3 mb-8">
+                    <TrendingUp className="h-4 w-4 text-gray-400" />
+                    <h3 className="text-xs font-bold uppercase tracking-widest text-gray-900">Applications</h3>
+                    <div className="flex-1 h-[1px] bg-gray-100"></div>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    {applications[c.id]?.length > 0 ? (
+                      applications[c.id].map((a) => (
+                        <div 
+                          key={a.id} 
+                          className="flex flex-col md:flex-row items-center justify-between p-6 rounded-xl border border-gray-100 hover:border-gray-300 transition-all group bg-[#FDFDFD]"
+                        >
+                          <div className="flex items-center gap-6 w-full md:w-auto">
+                            <div className="h-12 w-12 rounded-lg bg-gray-900 flex items-center justify-center font-bold text-white shadow-sm">
+                                {a.creatorData.name[0]}
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-gray-900 text-lg leading-none mb-1">{a.creatorData.name}</h4>
+                                <div className="flex items-center gap-2">
+                                    <span className={`text-[10px] font-bold uppercase ${a.status === 'accepted' ? 'text-emerald-600' : 'text-amber-600'}`}>
+                                        {a.status}
+                                    </span>
+                                    <span className="text-[10px] text-gray-300">•</span>
+                                    <span className="text-[10px] font-medium text-gray-400 italic">Applied {new Date(a.appliedAt?.seconds * 1000).toLocaleDateString()}</span>
+                                </div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-3 mt-6 md:mt-0 w-full md:w-auto">
+                            {a.status === "pending" ? (
+                              <>
+                                <button 
+                                  onClick={() => handleUpdateStatus(c.id, a.id, "accepted")} 
+                                  className="flex-1 md:flex-none bg-[#a3dcf3] text-black px-6 py-2.5 rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-black hover:text-white transition-all shadow-sm"
+                                >
+                                  Accept
+                                </button>
+                                <button 
+                                  onClick={() => handleUpdateStatus(c.id, a.id, "rejected")} 
+                                  className="flex-1 md:flex-none bg-white text-gray-400 px-6 py-2.5 rounded-lg text-xs font-bold uppercase tracking-widest border border-gray-200 hover:bg-red-50 hover:text-red-500 transition-all"
+                                >
+                                  Decline
+                                </button>
+                              </>
+                            ) : (
+                              <div className="flex items-center gap-3 w-full justify-end">
+                                {a.status === "accepted" && (
+                                  <button 
+                                    onClick={() => startConversation(a.creatorId, c.id, a.creatorData.name)}
+                                    className="w-full md:w-auto bg-black text-white px-6 py-3 rounded-lg text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-gray-800 transition-all"
+                                  >
+                                    <MessageSquare className="h-4 w-4 text-[#a3dcf3]" /> Open Workspace
+                                  </button>
+                                )}
+                                {a.status === "rejected" && (
+                                  <div className="flex items-center gap-2 text-gray-300 px-4 py-2 bg-gray-50 rounded-lg">
+                                    <XCircle className="h-4 w-4" />
+                                    <span className="text-[10px] font-bold uppercase tracking-widest">Rejected</span>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="py-12 text-center bg-gray-50/50 rounded-xl border border-dashed border-gray-200">
+                        <p className="text-gray-400 text-xs font-bold uppercase tracking-widest">Awaiting talent submissions</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))
           )}
         </div>
-      ))}
+      </main>
     </div>
   );
 }

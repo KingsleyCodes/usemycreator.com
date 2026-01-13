@@ -13,16 +13,27 @@ export default function RegisterPage() {
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    const res = await createUserWithEmailAndPassword(auth, email, password);
+    
+    // 1. Add a try block to catch errors (like 'email already in use')
+    try {
+      const res = await createUserWithEmailAndPassword(auth, email, password);
 
-    await setDoc(doc(db, "users", res.user.uid), {
-      uid: res.user.uid,
-      email,
-      role: null,
-      createdAt: Date.now(),
-    });
+      // 2. Initialize the user document in Firestore
+      await setDoc(doc(db, "users", res.user.uid), {
+        uid: res.user.uid,
+        email: email,
+        role: null, // This ensures they MUST go through onboarding
+        createdAt: new Date().toISOString(), // Readable date format
+      });
 
-    router.push("/onboarding");
+      // 3. Move them to the choice screen
+      router.push("/onboarding");
+      
+    } catch (error) {
+      // 4. If something goes wrong, alert the user instead of crashing
+      console.error("Registration error:", error.message);
+      alert(error.message); 
+    }
   };
 
   return (

@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { 
   collection, query, where, getDocs, 
-  updateDoc, doc, getDoc, setDoc, serverTimestamp 
+  updateDoc, doc, getDoc, setDoc, serverTimestamp,
+  onSnapshot, orderBy 
 } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { db, auth } from "@/lib/firebase";
@@ -26,6 +27,7 @@ export default function BusinessDashboard() {
   const router = useRouter();
   const [campaigns, setCampaigns] = useState([]);
   const [applications, setApplications] = useState({});
+  const [activeChats, setActiveChats] = useState([]); // New state for chats
   const [loading, setLoading] = useState(true);
   const [businessProfile, setBusinessProfile] = useState(null);
 
@@ -79,11 +81,13 @@ export default function BusinessDashboard() {
         }
         setBusinessProfile(bizSnap.data());
 
+        // 1. Fetch campaigns
         const q = query(collection(db, "campaigns"), where("businessId", "==", user.uid));
         const snap = await getDocs(q);
         const campaignList = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         setCampaigns(campaignList);
 
+        // 2. Fetch applications
         if (campaignList.length > 0) {
           const appsMap = {};
           const appQuery = query(collection(db, "applications"), where("businessId", "==", user.uid));
@@ -99,9 +103,23 @@ export default function BusinessDashboard() {
           }
           setApplications(appsMap);
         }
+
+        // 3. REAL-TIME CHAT LISTENER (Sorted by Recency)
+        const chatQuery = query(
+          collection(db, "chats"),
+          where("participants", "array-contains", user.uid),
+          orderBy("updatedAt", "desc")
+        );
+
+        const unsubscribeChats = onSnapshot(chatQuery, (snapshot) => {
+          setActiveChats(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
+        });
+
+        setLoading(false);
+        return () => unsubscribeChats();
+
       } catch (err) {
         console.error("Dashboard error:", err);
-      } finally {
         setLoading(false);
       }
     });
@@ -162,7 +180,7 @@ export default function BusinessDashboard() {
                 <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Management Console</span>
             </div>
             <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900">
-                Active <span className="text-gray-400">Campaigns.</span>
+                Studio <span className="text-gray-400">Operations.</span>
             </h1>
           </div>
           <button 
@@ -173,8 +191,51 @@ export default function BusinessDashboard() {
           </button>
         </div>
 
-        {/* CAMPAIGNS LIST */}
-        <div className="space-y-12">
+        {/* --- SECTION 1: ACTIVE CHANNELS (Rearranged to Top) --- */}
+        <div className="mb-16">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-sm font-black uppercase tracking-[0.2em] text-gray-900 flex items-center gap-2">
+                <MessageSquare className="h-4 w-4 text-[#a3dcf3]" /> Active Secure Channels
+            </h3>
+            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Communication Hub</span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {activeChats.length > 0 ? (
+              activeChats.map((chat) => (
+                <div 
+                  key={chat.id} 
+                  onClick={() => router.push(`/dashboard/chat/${chat.id}`)}
+                  className="bg-white border border-gray-100 rounded-[1.5rem] p-5 hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group shadow-sm"
+                >
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="h-10 w-10 rounded-xl bg-black flex items-center justify-center text-[#a3dcf3] font-black text-sm">
+                      {chat.creatorName?.[0] || "C"}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-black text-gray-900 truncate text-sm uppercase tracking-tight">{chat.creatorName}</h4>
+                      <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Workspace Active</p>
+                    </div>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                      <p className="text-xs text-gray-600 line-clamp-1 font-medium italic">"{chat.lastMessage || "No messages yet..."}"</p>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="col-span-full bg-white border border-dashed border-gray-200 rounded-[2rem] p-12 text-center">
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">No active secure channels initiated</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* --- SECTION 2: CAMPAIGNS (Below Chats) --- */}
+        <div className="space-y-12 pt-8 border-t border-gray-100">
+          <div className="flex items-center gap-3 mb-2">
+             <TrendingUp className="h-4 w-4 text-gray-400" />
+             <h3 className="text-xs font-black uppercase tracking-widest text-gray-900">Campaign Inventory</h3>
+          </div>
           {campaigns.length === 0 ? (
             <div className="bg-white border border-gray-200 rounded-2xl p-20 text-center">
               <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">No active deployments found</p>
@@ -216,11 +277,10 @@ export default function BusinessDashboard() {
                   </div>
                 </div>
 
-                {/* Applications Table-Style Section */}
+                {/* Applications Section */}
                 <div className="bg-white p-6 sm:p-8">
                   <div className="flex items-center gap-3 mb-8">
-                    <TrendingUp className="h-4 w-4 text-gray-400" />
-                    <h3 className="text-xs font-bold uppercase tracking-widest text-gray-900">Applications</h3>
+                    <h3 className="text-xs font-bold uppercase tracking-widest text-gray-900">Applicant Tracking</h3>
                     <div className="flex-1 h-[1px] bg-gray-100"></div>
                   </div>
                   

@@ -19,6 +19,8 @@ import {
 } from "firebase/firestore";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { db, auth } from "@/lib/firebase";
+// Icons for the new UI elements
+import { ExternalLink, ShieldCheck, Ban, User as UserIcon, activity } from "lucide-react";
 
 export default function AdminMasterDashboard() {
   const router = useRouter();
@@ -26,7 +28,7 @@ export default function AdminMasterDashboard() {
   const [businesses, setBusinesses] = useState([]);
   const [campaigns, setCampaigns] = useState([]);
   const [payouts, setPayouts] = useState([]);
-  const [notifications, setNotifications] = useState([]); // ✅ Added for Manage Notifications
+  const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState("creators"); 
   
@@ -82,7 +84,7 @@ export default function AdminMasterDashboard() {
           setPayouts(enrichedPayouts);
         });
 
-        // 3. ✅ REAL-TIME NOTIFICATIONS LISTENER
+        // 3. REAL-TIME NOTIFICATIONS LISTENER
         const notifQuery = query(
           collection(db, "global_notifications"),
           orderBy("createdAt", "desc")
@@ -109,7 +111,6 @@ export default function AdminMasterDashboard() {
   const getBusinessName = (id) => businesses.find(b => b.id === id)?.companyName || "Unknown Business";
   const getCreatorName = (id) => creators.find(c => c.id === id)?.name || "Not Assigned Yet";
 
-  // ✅ Toggle Notification Status
   const toggleNotifStatus = async (id, currentStatus) => {
     try {
       await updateDoc(doc(db, "global_notifications", id), { active: !currentStatus });
@@ -118,7 +119,6 @@ export default function AdminMasterDashboard() {
     }
   };
 
-  // ✅ Delete Notification
   const deleteNotification = async (id) => {
     if (!confirm("Permanently delete this broadcast?")) return;
     try {
@@ -164,30 +164,23 @@ export default function AdminMasterDashboard() {
     } catch (err) { alert("Error."); }
   };
 
-  // UPDATED BROADCAST FUNCTION
   const sendBroadcast = async (e) => {
-    // Prevent form submission if this is inside a form
     if (e && e.preventDefault) e.preventDefault();
-    
     if (!broadcastMessage.trim()) return alert("Please enter a message.");
     
     setIsSending(true);
     try {
-      // ✅ Use a direct reference to avoid any path issues
       const notifRef = collection(db, "global_notifications");
-      
       await addDoc(notifRef, {
         message: broadcastMessage.trim(),
         target: broadcastTarget, 
         createdAt: serverTimestamp(),
         active: true
       });
-
       setBroadcastMessage("");
       alert(`Broadcast successfully pushed to ${broadcastTarget}!`);
     } catch (err) {
       console.error("Full Error Object:", err);
-      // This will tell us if it's a Permission or Index error
       alert(`Error sending broadcast: ${err.message}`);
     } finally {
       setIsSending(false);
@@ -206,10 +199,10 @@ export default function AdminMasterDashboard() {
       {/* CAMPAIGN MODAL */}
       {selectedCampaign && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
-          <div className="bg-[#111] border border-white/10 w-full max-w-2xl rounded-[2.5rem] overflow-hidden">
+          <div className="bg-[#111] border border-white/10 w-full max-w-2xl rounded-[2.5rem] overflow-hidden shadow-2xl">
             <div className="p-8 border-b border-white/5 flex justify-between items-center">
               <h2 className="text-2xl font-black">{selectedCampaign.title}</h2>
-              <button onClick={() => setSelectedCampaign(null)} className="h-10 w-10 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10">✕</button>
+              <button onClick={() => setSelectedCampaign(null)} className="h-10 w-10 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 transition-colors">✕</button>
             </div>
             <div className="p-8 space-y-6">
               <div className="grid grid-cols-2 gap-4">
@@ -234,7 +227,7 @@ export default function AdminMasterDashboard() {
       {/* Header */}
       <header className="flex justify-between items-center mb-12">
         <h1 className="text-4xl font-black tracking-tighter italic">ADMIN <span className="text-[#a3dcf3] not-italic text-5xl">CORE</span></h1>
-        <button onClick={() => signOut(auth)} className="bg-white/5 text-gray-400 px-6 py-3 rounded-2xl font-black border border-white/10 text-[10px] uppercase">Logoff</button>
+        <button onClick={() => signOut(auth)} className="bg-white/5 text-gray-400 px-6 py-3 rounded-2xl font-black border border-white/10 text-[10px] uppercase hover:bg-white/10 transition-all">Logoff</button>
       </header>
 
       {/* GLOBAL BROADCAST SYSTEM */}
@@ -296,7 +289,6 @@ export default function AdminMasterDashboard() {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
-              {/* ✅ NOTIFICATIONS VIEW */}
               {view === "notifications" ? (
                 notifications.map((n) => (
                   <tr key={n.id} className="hover:bg-white/[0.01]">
@@ -320,16 +312,10 @@ export default function AdminMasterDashboard() {
                     </td>
                     <td className="p-6 text-right">
                       <div className="flex justify-end gap-3">
-                        <button 
-                          onClick={() => toggleNotifStatus(n.id, n.active)}
-                          className="text-[9px] font-black uppercase bg-white/5 border border-white/10 px-4 py-2 rounded-lg hover:bg-white/10"
-                        >
+                        <button onClick={() => toggleNotifStatus(n.id, n.active)} className="text-[9px] font-black uppercase bg-white/5 border border-white/10 px-4 py-2 rounded-lg hover:bg-white/10">
                           {n.active ? "Deactivate" : "Activate"}
                         </button>
-                        <button 
-                          onClick={() => deleteNotification(n.id)}
-                          className="text-[9px] font-black uppercase bg-red-500/10 text-red-500 px-4 py-2 rounded-lg border border-red-500/20 hover:bg-red-500/20"
-                        >
+                        <button onClick={() => deleteNotification(n.id)} className="text-[9px] font-black uppercase bg-red-500/10 text-red-500 px-4 py-2 rounded-lg border border-red-500/20 hover:bg-red-500/20">
                           Delete
                         </button>
                       </div>
@@ -342,9 +328,7 @@ export default function AdminMasterDashboard() {
                     <td className="p-6">
                       <p className="font-bold text-gray-200">{p.creatorName}</p>
                       {p.bankDetails && (
-                        <div className="mt-2 text-[10px] text-gray-500 font-mono">
-                          {p.bankDetails.bankName} - {p.bankDetails.accountNumber}
-                        </div>
+                        <div className="mt-2 text-[10px] text-gray-500 font-mono">{p.bankDetails.bankName} - {p.bankDetails.accountNumber}</div>
                       )}
                     </td>
                     <td className="p-6"><p className="text-2xl font-black text-orange-500">₦{p.amount?.toLocaleString()}</p></td>
@@ -365,20 +349,56 @@ export default function AdminMasterDashboard() {
                 ))
               ) : (
                 (view === "creators" ? creators : businesses).map((user) => (
-                  <tr key={user.id}>
+                  <tr key={user.id} className="hover:bg-white/[0.01] transition-colors">
                     <td className="p-6">
-                      <p className="font-bold text-gray-200">{user.name || user.companyName}</p>
+                      <div className="flex items-center gap-4">
+                        <div className="h-10 w-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden">
+                          {user.profileImage ? (
+                            <img src={user.profileImage} className="h-full w-full object-cover" alt="" />
+                          ) : (
+                            <UserIcon className="h-4 w-4 text-gray-600" />
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-bold text-gray-200">{user.name || user.companyName}</p>
+                          <p className="text-[9px] text-gray-600 font-black uppercase tracking-widest">{user.profileSlug || "No Slug"}</p>
+                        </div>
+                      </div>
                     </td>
                     <td className="p-6">
-                      {user.isVerified && <span className="text-[9px] font-black text-blue-500 mr-2 uppercase">Verified</span>}
-                      {user.isBanned && <span className="text-[9px] font-black text-red-500 uppercase">Banned</span>}
+                      <div className="flex gap-2">
+                        {user.isVerified && (
+                          <span className="flex items-center gap-1 text-[9px] font-black text-[#a3dcf3] bg-[#a3dcf3]/10 px-2 py-1 rounded uppercase tracking-widest border border-[#a3dcf3]/20">
+                            <ShieldCheck className="h-3 w-3" /> Verified
+                          </span>
+                        )}
+                        {user.isBanned && (
+                          <span className="flex items-center gap-1 text-[9px] font-black text-red-500 bg-red-500/10 px-2 py-1 rounded uppercase tracking-widest border border-red-500/20">
+                            <Ban className="h-3 w-3" /> Banned
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="p-6 text-right">
                       <div className="flex justify-end gap-2">
-                        {view === "creators" && (
-                          <button onClick={() => toggleVerification(user.id, user.isVerified)} className="text-[9px] font-black uppercase border border-white/10 px-3 py-2 rounded-lg">Verify</button>
+                        {/* THE VIEW PROFILE FUNCTION */}
+                        {view === "creators" && user.profileSlug && (
+                          <button 
+                            onClick={() => window.open(`/profile/${user.profileSlug}`, '_blank')}
+                            className="flex items-center gap-2 text-[9px] font-black uppercase bg-[#a3dcf3]/10 text-[#a3dcf3] border border-[#a3dcf3]/30 px-4 py-2 rounded-lg hover:bg-[#a3dcf3] hover:text-black transition-all"
+                          >
+                            Live View <ExternalLink className="h-3 w-3" />
+                          </button>
                         )}
-                        <button onClick={() => toggleBanStatus(view === "creators" ? "creators" : "businesses", user.id, user.isBanned)} className="text-[9px] font-black uppercase border border-red-500/20 text-red-500 px-3 py-2 rounded-lg">Ban</button>
+                        
+                        {view === "creators" && (
+                          <button onClick={() => toggleVerification(user.id, user.isVerified)} className="text-[9px] font-black uppercase border border-white/10 px-3 py-2 rounded-lg hover:bg-white/5">
+                            {user.isVerified ? "Unverify" : "Verify"}
+                          </button>
+                        )}
+                        <button onClick={() => toggleBanStatus(view === "creators" ? "creators" : "businesses", user.id, user.isBanned)} className="text-[9px] font-black uppercase border border-red-500/20 text-red-500 px-3 py-2 rounded-lg hover:bg-red-500/10">
+                          {user.isBanned ? "Lift" : "Ban"}
+                        </button>
                       </div>
                     </td>
                   </tr>

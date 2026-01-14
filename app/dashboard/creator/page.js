@@ -44,17 +44,21 @@ export default function CreatorDashboard() {
           setUserData(userDoc.data());
         }
 
-        // 2. Fetch active campaigns
+        // 2. Fetch AVAILABLE campaigns
+        // ✅ FIX: Changed status filter to "open" so creators only see unassigned campaigns
         const campaignQuery = query(
           collection(db, "campaigns"),
-          where("status", "==", "active")
+          where("status", "==", "open") 
         );
-        const campaignSnap = await getDocs(campaignQuery);
-        const campaignList = campaignSnap.docs.map((d) => ({
-          id: d.id,
-          ...d.data(),
-        }));
-        setCampaigns(campaignList);
+        
+        // Use onSnapshot here if you want the list to disappear instantly when another creator accepts
+        const unsubscribeCampaigns = onSnapshot(campaignQuery, (snapshot) => {
+          const campaignList = snapshot.docs.map((d) => ({
+            id: d.id,
+            ...d.data(),
+          }));
+          setCampaigns(campaignList);
+        });
 
         // 3. Fetch creator's applications
         const appQuery = query(
@@ -68,7 +72,7 @@ export default function CreatorDashboard() {
         });
         setAppliedCampaigns(appliedMap);
 
-        // 4. REAL-TIME CHAT LISTENER (Inbox)
+        // 4. REAL-TIME CHAT LISTENER (Sorted by Recency)
         const chatQuery = query(
           collection(db, "chats"),
           where("participants", "array-contains", user.uid),
@@ -80,7 +84,10 @@ export default function CreatorDashboard() {
         });
 
         setLoading(false);
-        return () => unsubscribeChats();
+        return () => {
+          unsubscribeChats();
+          unsubscribeCampaigns();
+        };
 
       } catch (err) {
         console.error("Creator dashboard error:", err);
@@ -110,8 +117,11 @@ export default function CreatorDashboard() {
         ...prev,
         [campaignId]: "pending",
       }));
+
+      alert("Application sent successfully.");
     } catch (err) {
       console.error("Apply error:", err);
+      alert("Failed to submit proposal.");
     } finally {
       setApplyingId(null);
     }
@@ -158,15 +168,55 @@ export default function CreatorDashboard() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* --- SECTION 1: TOP-TIER MESSAGING --- */}
+        <div className="mb-16">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-sm font-black uppercase tracking-[0.2em] text-gray-900 flex items-center gap-2">
+                <MessageSquare className="h-4 w-4 text-[#a3dcf3]" /> Direct Infrastructure
+            </h3>
+            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Live Connections</span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {activeChats.length > 0 ? (
+              activeChats.map((chat) => (
+                <div 
+                  key={chat.id} 
+                  onClick={() => router.push(`/dashboard/chat/${chat.id}`)}
+                  className="bg-white border border-gray-100 rounded-[1.5rem] p-5 hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group shadow-sm"
+                >
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="h-10 w-10 rounded-xl bg-black flex items-center justify-center text-[#a3dcf3] font-black text-sm uppercase">
+                      {chat.businessName?.[0]}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-black text-gray-900 truncate text-sm uppercase tracking-tight">{chat.businessName}</h4>
+                      <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Secure Channel</p>
+                    </div>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                      <p className="text-xs text-gray-600 line-clamp-1 font-medium italic">"{chat.lastMessage || "Establish connection..."}"</p>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="col-span-full bg-white border border-dashed border-gray-200 rounded-[2rem] p-12 text-center">
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">No active secure channels found</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* --- SECTION 2: OPPORTUNITIES --- */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 pt-8 border-t border-gray-100">
           
-          {/* LEFT: GIGS */}
+          {/* GIGS LIST */}
           <div className="lg:col-span-8 space-y-6">
             <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-bold uppercase tracking-tighter text-gray-900 flex items-center gap-2">
                     <Briefcase className="h-4 w-4 text-gray-400" /> Open Opportunities
                 </h3>
-                <span className="text-[10px] font-bold bg-gray-100 px-2 py-1 rounded text-gray-500">{campaigns.length} Active</span>
+                <span className="text-[10px] font-bold bg-gray-100 px-2 py-1 rounded text-gray-500">{campaigns.length} Available</span>
             </div>
 
             {campaigns.length === 0 ? (
@@ -206,7 +256,7 @@ export default function CreatorDashboard() {
                         <div className="flex items-center justify-between pt-6 border-t border-gray-50">
                             <div className="flex items-center gap-4 text-gray-400">
                                 <div className="flex items-center gap-1 text-[11px] font-bold uppercase">
-                                    <Clock className="h-3.5 w-3.5" /> 2 days left
+                                    <Clock className="h-3.5 w-3.5" /> Live Opportunity
                                 </div>
                             </div>
                             
@@ -224,7 +274,7 @@ export default function CreatorDashboard() {
                                 disabled={applyingId === c.id || !isFunded}
                                 className={`px-8 py-3 rounded-lg text-xs font-bold uppercase tracking-widest transition-all flex items-center gap-2 ${
                                   isFunded 
-                                  ? "bg-black text-white hover:bg-gray-800" 
+                                  ? "bg-black text-white hover:bg-gray-800 shadow-lg shadow-black/10" 
                                   : "bg-gray-100 text-gray-400 cursor-not-allowed"
                                 }`}
                               >
@@ -240,46 +290,9 @@ export default function CreatorDashboard() {
             )}
           </div>
 
-          {/* RIGHT: INBOX */}
+          {/* RIGHT SIDEBAR: STATS */}
           <div className="lg:col-span-4 space-y-6">
-            <h3 className="text-sm font-bold uppercase tracking-tighter text-gray-900 flex items-center gap-2 mb-4">
-                <MessageSquare className="h-4 w-4 text-gray-400" /> Active Messages
-            </h3>
-
-            <div className="space-y-3">
-              {activeChats.length > 0 ? (
-                activeChats.map((chat) => (
-                  <div 
-                    key={chat.id} 
-                    onClick={() => router.push(`/dashboard/chat/${chat.id}`)}
-                    className="bg-white border border-gray-200 rounded-xl p-5 hover:border-black transition-all cursor-pointer group"
-                  >
-                    <div className="flex items-center gap-4 mb-3">
-                      <div className="h-10 w-10 rounded-lg bg-gray-900 flex items-center justify-center text-white font-bold text-sm">
-                        {chat.businessName?.[0]}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex justify-between items-center">
-                            <h4 className="font-bold text-gray-900 truncate text-sm">{chat.businessName}</h4>
-                            <span className="text-[9px] font-bold text-gray-400">2m ago</span>
-                        </div>
-                        <p className="text-[10px] font-bold text-[#a3dcf3] uppercase tracking-widest">Partnership Chat</p>
-                      </div>
-                    </div>
-                    <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
-                        <p className="text-xs text-gray-500 line-clamp-1 italic">"{chat.lastMessage}"</p>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="bg-gray-50 border border-dashed border-gray-200 rounded-2xl p-10 text-center">
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">No active chats</p>
-                </div>
-              )}
-            </div>
-
-            {/* QUICK STATS SIDEBAR (Uniformity) */}
-            <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm mt-8">
+            <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
                 <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-6">Your Performance</h4>
                 <div className="space-y-4">
                     <div className="flex justify-between items-center">
@@ -291,6 +304,13 @@ export default function CreatorDashboard() {
                         <span className="text-xs font-bold text-gray-900">4.9/5.0</span>
                     </div>
                 </div>
+            </div>
+            
+            <div className="bg-black text-white rounded-2xl p-6 shadow-xl">
+                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-[#a3dcf3] mb-2">Creator Tip</p>
+                <p className="text-xs font-medium leading-relaxed">
+                  Keeping your bio updated increases your chances of proposal acceptance by 40%.
+                </p>
             </div>
           </div>
 

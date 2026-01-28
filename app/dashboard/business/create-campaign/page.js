@@ -1,15 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { auth, db } from "@/lib/firebase";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { signOut } from "firebase/auth";
+import { collection, addDoc, serverTimestamp, doc, getDoc } from "firebase/firestore";
+import { signOut, onAuthStateChanged } from "firebase/auth";
 
 export default function CreateCampaign() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1); // Track current step
+  const [businessProfile, setBusinessProfile] = useState(null);
   
   const [formData, setFormData] = useState({
     title: "",
@@ -20,6 +21,21 @@ export default function CreateCampaign() {
     status: "inactive",
     paymentStatus: "unfunded" 
   });
+
+  // Fetch Business details on mount to ensure we have the email/name for the campaign doc
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const bizDoc = await getDoc(doc(db, "businesses", user.uid));
+        if (bizDoc.exists()) {
+          setBusinessProfile(bizDoc.data());
+        }
+      } else {
+        router.push("/login");
+      }
+    });
+    return () => unsubscribe();
+  }, [router]);
 
   const handleSignOut = async () => {
     try {
@@ -42,12 +58,17 @@ export default function CreateCampaign() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!auth.currentUser) return alert("You must be logged in.");
+    if (!businessProfile) return alert("Business profile not found. Please complete setup.");
     if (Number(formData.budget) <= 0) return alert("Please set a valid budget.");
 
     setLoading(true);
     try {
+      // 1. Save campaign to Firestore
+      // NOTE: We now include businessName and businessEmail for notification efficiency
       const docRef = await addDoc(collection(db, "campaigns"), {
         businessId: auth.currentUser.uid,
+        businessName: businessProfile.companyName || businessProfile.name || "A Brand",
+        businessEmail: auth.currentUser.email || businessProfile.email || businessProfile.contactEmail,
         title: formData.title.trim(),
         description: formData.description.trim(),
         platform: formData.platform,
@@ -57,7 +78,20 @@ export default function CreateCampaign() {
         paymentStatus: "unfunded",
         createdAt: serverTimestamp(),
       });
+
+      // 2. Trigger the Broadcast API to notify all creators
+      // We send the platform and budget so the email looks professional
+      fetch('/api/broadcast-campaign', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          campaignTitle: formData.title.trim(),
+          budget: formData.budget,
+          platform: formData.platform,
+        }),
+      }).catch(err => console.error("Broadcast notification failed:", err));
       
+      // 3. Redirect to the Paystack payment initialization page
       router.push(`/dashboard/business/pay/${docRef.id}`);
 
     } catch (err) {

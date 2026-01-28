@@ -51,7 +51,6 @@ export default function CreatorDashboard() {
         }
 
         // 2. Fetch AVAILABLE & ASSIGNED campaigns
-        // We fetch "open" (for marketplace) AND "assigned" (so they can submit proof)
         const campaignQuery = query(
           collection(db, "campaigns"),
           where("status", "in", ["open", "assigned", "in_review", "completed"]) 
@@ -110,6 +109,7 @@ export default function CreatorDashboard() {
       setApplyingId(campaignId);
       const targetCampaign = campaigns.find(c => c.id === campaignId);
       
+      // 1. Save application to Firestore
       await addDoc(collection(db, "applications"), {
         campaignId,
         creatorId: user.uid,
@@ -117,13 +117,34 @@ export default function CreatorDashboard() {
         appliedAt: serverTimestamp(),
         businessId: targetCampaign.businessId 
       });
+
+      // 2. Fetch the Business Owner's email and name for notification
+      // We check the "businesses" collection using the businessId from the campaign
+      const businessDoc = await getDoc(doc(db, "businesses", targetCampaign.businessId));
+      
+      if (businessDoc.exists()) {
+        const businessData = businessDoc.data();
+        
+        // 3. Trigger the Business Notification API
+        // We don't "await" this so the UI updates instantly for the creator
+        fetch('/api/notify-application', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            businessEmail: businessData.email || businessData.contactEmail, // Depends on your business schema
+            businessName: businessData.companyName || businessData.name,
+            creatorName: userData?.name || "A verified creator",
+            campaignTitle: targetCampaign.title
+          }),
+        }).catch(err => console.error("Notification trigger failed:", err));
+      }
       
       setAppliedCampaigns((prev) => ({
         ...prev,
         [campaignId]: "pending",
       }));
 
-      alert("Application sent successfully.");
+      alert("Application sent successfully. The brand has been notified!");
     } catch (err) {
       console.error("Apply error:", err);
       alert("Failed to submit proposal.");

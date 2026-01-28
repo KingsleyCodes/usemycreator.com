@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { auth, db } from "@/lib/firebase";
-import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
+import { doc, setDoc, getDoc, serverTimestamp, updateDoc } from "firebase/firestore";
 import { signOut } from "firebase/auth";
 
 export default function BusinessSetup() {
@@ -31,17 +31,51 @@ export default function BusinessSetup() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    
+    const user = auth.currentUser;
+    if (!user) {
+      alert("Session expired. Please log in again.");
+      return;
+    }
+
     try {
-      await setDoc(doc(db, "businesses", auth.currentUser.uid), {
-        uid: auth.currentUser.uid,
+      // 1. Save Business Profile to Firestore
+      const businessRef = doc(db, "businesses", user.uid);
+      await setDoc(businessRef, {
+        uid: user.uid,
         companyName: companyName.trim(),
         description: description.trim(),
         industry: industry.trim(),
         updatedAt: serverTimestamp(),
+        welcomeEmailSent: false, // Initial state
       });
+
+      // 2. Trigger Welcome Email via Resend API
+      try {
+        const response = await fetch('/api/send-welcome', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: user.email,
+            name: companyName.trim(),
+            type: 'business', // Tells the API to send the Business version
+          }),
+        });
+
+        if (response.ok) {
+          // Mark as sent so the dashboard backup logic doesn't trigger it again
+          await updateDoc(businessRef, { welcomeEmailSent: true });
+        }
+      } catch (emailErr) {
+        // We catch this but don't stop the user from proceeding
+        console.error("Welcome email failed but profile was saved:", emailErr);
+      }
+
+      // 3. Final Redirect
       router.push("/dashboard/business");
     } catch (err) {
-      alert("Failed to save profile.");
+      console.error("Setup Error:", err);
+      alert("Failed to save profile. Please check your connection.");
     } finally {
       setLoading(false);
     }
@@ -71,46 +105,58 @@ export default function BusinessSetup() {
         </button>
 
         <div className="mb-8">
-          <h1 className="text-3xl font-black text-gray-900 mb-2">Business Profile</h1>
-          <p className="text-gray-500">Let creators know who you are.</p>
+          <h1 className="text-3xl font-black text-gray-900 mb-2 tracking-tighter uppercase">Business Profile</h1>
+          <p className="text-gray-500 text-sm font-medium">Let creators know who you are and what your brand stands for.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            className="w-full border-2 border-gray-100 p-4 rounded-2xl focus:border-[#a3dcf3] outline-none transition-all"
-            placeholder="Company Name"
-            value={companyName}
-            onChange={(e) => setCompanyName(e.target.value)}
-            required
-          />
-          <input
-            className="w-full border-2 border-gray-100 p-4 rounded-2xl focus:border-[#a3dcf3] outline-none transition-all"
-            placeholder="Industry (e.g. Fashion, Tech)"
-            value={industry}
-            onChange={(e) => setIndustry(e.target.value)}
-            required
-          />
-          <textarea
-            className="w-full border-2 border-gray-100 p-4 rounded-2xl focus:border-[#a3dcf3] outline-none resize-none transition-all"
-            placeholder="What does your company do?"
-            rows="4"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            required
-          />
+          <div>
+            <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 block mb-2 px-1">Identity</label>
+            <input
+              className="w-full border-2 border-gray-50 bg-gray-50/50 p-4 rounded-2xl focus:border-[#a3dcf3] focus:bg-white outline-none font-bold text-sm transition-all"
+              placeholder="Company Name"
+              value={companyName}
+              onChange={(e) => setCompanyName(e.target.value)}
+              required
+            />
+          </div>
+
+          <div>
+            <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 block mb-2 px-1">Niche</label>
+            <input
+              className="w-full border-2 border-gray-50 bg-gray-50/50 p-4 rounded-2xl focus:border-[#a3dcf3] focus:bg-white outline-none font-bold text-sm transition-all"
+              placeholder="Industry (e.g. Fashion, Tech)"
+              value={industry}
+              onChange={(e) => setIndustry(e.target.value)}
+              required
+            />
+          </div>
+
+          <div>
+            <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 block mb-2 px-1">Brief Description</label>
+            <textarea
+              className="w-full border-2 border-gray-50 bg-gray-50/50 p-4 rounded-2xl focus:border-[#a3dcf3] focus:bg-white outline-none resize-none font-medium text-sm transition-all"
+              placeholder="What does your company do?"
+              rows="4"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              required
+            />
+          </div>
+
           <div className="pt-2 space-y-4">
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#a3dcf3] py-4 rounded-2xl font-black text-lg shadow-lg hover:shadow-xl hover:bg-[#8bcce6] transition-all transform active:scale-95"
+              className="w-full bg-[#a3dcf3] text-black py-5 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl hover:shadow-2xl hover:bg-[#8bcce6] transition-all transform active:scale-95 disabled:opacity-50"
             >
-              {loading ? "Saving..." : "Go to Dashboard"}
+              {loading ? "Initializing Deployment..." : "Complete Setup"}
             </button>
             
             <button 
               type="button"
               onClick={() => router.push("/dashboard/business")}
-              className="w-full text-center text-gray-400 font-bold hover:text-black transition-colors text-sm"
+              className="w-full text-center text-gray-400 font-bold hover:text-black transition-colors text-[10px] uppercase tracking-widest"
             >
               Cancel and return
             </button>

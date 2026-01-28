@@ -25,10 +25,10 @@ export default function HomeNavbar() {
   }, []);
 
   const navLinks = [
-    { name: "Solutions", href: "#solutions" },
-    { name: "Creator Network", href: "#creators" },
-    { name: "Enterprise", href: "#enterprise" },
-    { name: "Pricing", href: "#pricing" },
+    { name: "Solutions", href: "/solutions" },
+    { name: "Creator Network", href: "/creator-network" },
+    { name: "Enterprise", href: "/enterprise" },
+    { name: "Pricing", href: "/pricing" },
   ];
 
   return (
@@ -56,13 +56,13 @@ export default function HomeNavbar() {
             {/* Center: Public Links */}
             <div className="hidden lg:flex items-center gap-2">
               {navLinks.map((link) => (
-                <a
+                <button
                   key={link.name}
-                  href={link.href}
+                  onClick={() => router.push(link.href)}
                   className="px-4 py-2 rounded-md text-sm font-semibold text-gray-500 hover:text-black hover:bg-gray-50 transition-all"
                 >
                   {link.name}
-                </a>
+                </button>
               ))}
             </div>
 
@@ -107,15 +107,17 @@ export default function HomeNavbar() {
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
               <div className="space-y-1">
                 {navLinks.map((link) => (
-                  <a 
+                  <button 
                     key={link.name}
-                    href={link.href}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center justify-between p-4 rounded-xl hover:bg-gray-50 text-gray-900 transition-all border border-transparent font-bold text-lg"
+                    onClick={() => {
+                      router.push(link.href);
+                      setMobileMenuOpen(false);
+                    }}
+                    className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-gray-50 text-gray-900 transition-all border border-transparent font-bold text-lg"
                   >
                     {link.name}
                     <ChevronDown className="h-4 w-4 -rotate-90 text-gray-300" />
-                  </a>
+                  </button>
                 ))}
               </div>
 

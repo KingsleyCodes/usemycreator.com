@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Allow: /profile/
+Disallow: /dashboard/
+Disallow: /dashboard/admin/
+Disallow: /dashboard/business/
+Disallow: /dashboard/creator/
+Disallow: /api/
+
+Sitemap: https://usemycreator.com/sitemap.xml

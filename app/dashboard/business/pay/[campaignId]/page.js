@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { doc, getDoc } from "firebase/firestore";
+import { db, auth } from "@/lib/firebase";
+import { ShieldCheck, CreditCard, Lock, ArrowLeft } from "lucide-react";
 
 export default function PaymentPage() {
   const { campaignId } = useParams();
@@ -11,76 +12,163 @@ export default function PaymentPage() {
   const [campaign, setCampaign] = useState(null);
   const [processing, setProcessing] = useState(false);
 
+  // 1. FETCH CAMPAIGN DATA ON LOAD
   useEffect(() => {
     const fetchCampaign = async () => {
-      const docRef = doc(db, "campaigns", campaignId);
-      const snap = await getDoc(docRef);
-      if (snap.exists()) setCampaign(snap.data());
-    };
-    fetchCampaign();
-  }, [campaignId]);
-
-  const handlePayment = async () => {
-    setProcessing(true);
-    // 💡 Simulation: Wait 2 seconds to "process" payment
-    setTimeout(async () => {
+      if (!campaignId) return;
+      
       try {
-        await updateDoc(doc(db, "campaigns", campaignId), {
-          paymentStatus: "escrow_locked",
-          status: "active"
-        });
-        router.push("/dashboard/business");
+        const docRef = doc(db, "campaigns", campaignId);
+        const snap = await getDoc(docRef);
+        
+        if (snap.exists()) {
+          setCampaign({ id: snap.id, ...snap.data() });
+        } else {
+          // If the campaign doesn't exist, send them back
+          router.push("/dashboard/business");
+        }
       } catch (err) {
-        alert("Payment failed to sync.");
-      } finally {
-        setProcessing(false);
+        console.error("Error fetching campaign for payment:", err);
       }
-    }, 2000);
+    };
+    
+    fetchCampaign();
+  }, [campaignId, router]);
+
+  // 2. CALCULATE BUDGET AND FEES
+  // Budget is pulled from Firestore, we add a 5% platform/escrow fee
+  const platformFee = campaign ? campaign.budget * 0.05 : 0;
+  const totalAmount = campaign ? campaign.budget + platformFee : 0;
+
+  // 3. INTEGRATED PAYSTACK POPUP HANDLER
+  const handlePayment = () => {
+    // Safety check: ensure the Paystack script from layout.js is loaded
+    if (!window.PaystackPop) {
+      alert("Payment processor is still loading. Please wait a few seconds and try again.");
+      return;
+    }
+
+    setProcessing(true);
+
+    const handler = window.PaystackPop.setup({
+      key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY, // Pulled from your .env.local
+      email: auth.currentUser?.email,
+      amount: Math.round(totalAmount * 100), // MUST be an integer in Kobo
+      currency: "NGN",
+      metadata: {
+        campaignId: campaign.id,
+        businessId: auth.currentUser?.uid,
+        totalWithFee: totalAmount,
+      },
+      callback: function (response) {
+        // SUCCESS: The money is now with Paystack.
+        // The Webhook (api/paystack/webhook/route.js) will handle the 
+        // database update to 'escrow_locked' for security.
+        setProcessing(false);
+        router.push(`/dashboard/business/pay/success?ref=${response.reference}`);
+      },
+      onClose: function () {
+        // CANCELLED: The user closed the window without paying
+        setProcessing(false);
+        alert("Transaction cancelled. No funds were debited from your account.");
+      },
+    });
+
+    handler.openIframe();
   };
 
-  if (!campaign) return <div className="p-20 text-center font-black">Loading Invoice...</div>;
+  // 4. LOADING STATE
+  if (!campaign) return (
+    <div className="min-h-screen flex items-center justify-center bg-white">
+      <div className="flex flex-col items-center">
+        <div className="h-8 w-8 border-4 border-t-black border-gray-200 rounded-full animate-spin mb-4"></div>
+        <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Generating Secure Invoice...</p>
+      </div>
+    </div>
+  );
 
-  const platformFee = campaign.budget * 0.05; // 5% Fee
-  const totalAmount = campaign.budget + platformFee;
-
+  // 5. MAIN UI
   return (
-    <div className="min-h-screen bg-[#fcfcfc] flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white rounded-[3rem] shadow-2xl border border-gray-100 p-10">
-        <div className="text-center mb-8">
-          <div className="h-16 w-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-          </div>
-          <h1 className="text-2xl font-black tracking-tight text-gray-900">Secure Escrow Deposit</h1>
-          <p className="text-gray-400 text-sm font-medium">Funds will be held safely until work is approved.</p>
+    <div className="min-h-screen bg-[#F9FAFB] flex flex-col items-center justify-center p-4">
+      
+      {/* Back Navigation */}
+      <button 
+        onClick={() => router.back()}
+        className="mb-8 flex items-center gap-2 text-[10px] font-bold uppercase text-gray-400 hover:text-black transition-all"
+      >
+        <ArrowLeft className="h-3 w-3" /> Return to Studio
+      </button>
+
+      {/* Payment Card */}
+      <div className="max-w-md w-full bg-white rounded-[3rem] shadow-2xl border border-gray-100 p-8 md:p-12 relative overflow-hidden">
+        
+        {/* Decorative Shield Icon */}
+        <div className="absolute top-0 right-0 p-8">
+          <ShieldCheck className="h-8 w-8 text-emerald-500 opacity-10" />
         </div>
 
-        <div className="space-y-4 mb-10">
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-400 font-bold uppercase">Campaign Budget</span>
-            <span className="font-black text-gray-900">₦{campaign.budget.toLocaleString()}</span>
+        {/* Header Section */}
+        <div className="text-center mb-12">
+          <div className="h-20 w-20 bg-emerald-50 text-emerald-600 rounded-[2rem] flex items-center justify-center mx-auto mb-6 transform rotate-6 border border-emerald-100">
+            <Lock className="w-10 h-10" />
           </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-400 font-bold uppercase">Service Fee (5%)</span>
-            <span className="font-black text-gray-900">₦{platformFee.toLocaleString()}</span>
-          </div>
-          <div className="h-[1px] bg-gray-100 my-4" />
-          <div className="flex justify-between items-center">
-            <span className="text-gray-900 font-black uppercase text-xs">Total to Deposit</span>
-            <span className="text-3xl font-black text-gray-900">₦{totalAmount.toLocaleString()}</span>
+          <h1 className="text-3xl font-black tracking-tighter text-gray-900 uppercase">Secure Escrow</h1>
+          <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mt-2">
+            Invoice Ref: {campaign.id.substring(0, 8).toUpperCase()}
+          </p>
+        </div>
+
+        {/* Invoice Summary Box */}
+        <div className="bg-gray-50 rounded-[2.5rem] p-8 mb-10 border border-gray-100">
+          <div className="space-y-5">
+            <div className="flex justify-between text-[11px]">
+              <span className="text-gray-400 font-bold uppercase tracking-widest">Base Campaign Budget</span>
+              <span className="font-black text-gray-900 font-mono">₦{campaign.budget.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between text-[11px]">
+              <span className="text-gray-400 font-bold uppercase tracking-widest">Escrow Service Fee (5%)</span>
+              <span className="font-black text-gray-900 font-mono">₦{platformFee.toLocaleString()}</span>
+            </div>
+            
+            {/* Divider */}
+            <div className="h-[1px] bg-gray-200 w-full" />
+            
+            <div className="flex justify-between items-center pt-2">
+              <span className="text-gray-900 font-black uppercase text-xs tracking-tighter">Total Deposit</span>
+              <span className="text-4xl font-black text-gray-900 tracking-tight">
+                ₦{totalAmount.toLocaleString()}
+              </span>
+            </div>
           </div>
         </div>
 
+        {/* Action Button */}
         <button 
           onClick={handlePayment}
           disabled={processing}
-          className="w-full bg-black text-white py-6 rounded-2xl font-black text-lg hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
+          className="w-full bg-black text-white py-6 rounded-3xl font-black text-xs uppercase tracking-[0.2em] hover:bg-[#a3dcf3] hover:text-black transition-all disabled:opacity-50 flex items-center justify-center gap-3 shadow-xl active:scale-95"
         >
-          {processing ? "LOCKING FUNDS..." : "CONFIRM & DEPOSIT"}
+          {processing ? (
+            <span className="animate-pulse">Initializing Terminal...</span>
+          ) : (
+            <>
+              <CreditCard className="h-4 w-4" /> Initialize Secure Payment
+            </>
+          )}
         </button>
         
-        <p className="text-[10px] text-center text-gray-300 font-bold uppercase mt-6 tracking-widest">
-          Secured by MyCreator Escrow Node
-        </p>
+        {/* Trust Footer */}
+        <div className="mt-10 flex flex-col items-center gap-3">
+          <div className="flex items-center gap-2">
+             <div className="h-1.5 w-1.5 bg-emerald-500 rounded-full animate-ping" />
+             <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">
+              Live Escrow Node Active
+            </p>
+          </div>
+          <p className="text-[8px] text-gray-300 font-medium text-center px-4">
+            Funds are locked in a neutral account and released only after content approval.
+          </p>
+        </div>
       </div>
     </div>
   );

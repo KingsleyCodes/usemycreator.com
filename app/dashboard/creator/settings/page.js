@@ -5,20 +5,41 @@ import { useRouter } from "next/navigation";
 import { auth, db } from "@/lib/firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
+import { Loader2, CheckCircle, AlertCircle, Building2, Search } from "lucide-react";
 
 export default function BankSettings() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [verifying, setVerifying] = useState(false);
+  
+  // Lists
+  const [banks, setBanks] = useState([]);
   
   // Bank States
   const [bankData, setBankData] = useState({
     accountName: "",
     accountNumber: "",
-    bankName: ""
+    bankName: "",
+    bankCode: ""
   });
 
   useEffect(() => {
+    // 1. Fetch Nigerian Bank List for the dropdown
+    const fetchBanks = async () => {
+      try {
+        const res = await fetch("https://api.paystack.co/bank");
+        const data = await res.json();
+        if (data.status) {
+          setBanks(data.data);
+        }
+      } catch (err) {
+        console.error("Failed to load banks", err);
+      }
+    };
+
+    fetchBanks();
+
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (!user) {
         router.push("/login");
@@ -36,10 +57,46 @@ export default function BankSettings() {
     return () => unsubscribe();
   }, [router]);
 
+  // AUTO-VERIFICATION TRIGGER
+  // When bankCode and accountNumber (10 digits) are present, verify
+  useEffect(() => {
+    const triggerVerification = async () => {
+      if (bankData.accountNumber.length === 10 && bankData.bankCode) {
+        setVerifying(true);
+        setBankData(prev => ({ ...prev, accountName: "" })); // Clear name while verifying
+
+        try {
+          const response = await fetch(
+            `/api/verify-bank?accountNumber=${bankData.accountNumber}&bankCode=${bankData.bankCode}`
+          );
+          const result = await response.json();
+
+          if (result.accountName) {
+            setBankData(prev => ({ ...prev, accountName: result.accountName }));
+          } else {
+            setBankData(prev => ({ ...prev, accountName: "Verification Failed" }));
+          }
+        } catch (error) {
+          console.error("Verification error", error);
+        } finally {
+          setVerifying(false);
+        }
+      }
+    };
+
+    const timeoutId = setTimeout(triggerVerification, 500); // Debounce for 500ms
+    return () => clearTimeout(timeoutId);
+  }, [bankData.accountNumber, bankData.bankCode]);
+
   const saveSettings = async (e) => {
     e.preventDefault();
-    setSaving(true);
+    
+    if (bankData.accountName === "Verification Failed" || !bankData.accountName) {
+      alert("Please ensure your bank details are verified before saving.");
+      return;
+    }
 
+    setSaving(true);
     try {
       const userRef = doc(db, "creators", auth.currentUser.uid);
       await updateDoc(userRef, {
@@ -67,66 +124,97 @@ export default function BankSettings() {
       <main className="max-w-xl mx-auto bg-white p-10 rounded-[3rem] shadow-sm border border-gray-50">
         <header className="mb-10 text-center">
           <div className="h-16 w-16 bg-black text-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl">
-            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
+            <Building2 className="w-8 h-8" />
           </div>
-          <h1 className="text-2xl font-black tracking-tighter uppercase">Payout Settings</h1>
-          <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mt-1">Where should we send your money?</p>
+          <h1 className="text-2xl font-black tracking-tighter uppercase italic">Payout <span className="text-[#a3dcf3]">Terminal.</span></h1>
+          <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mt-1">Automatic Bank Verification</p>
         </header>
 
         <form onSubmit={saveSettings} className="space-y-6">
+          
+          {/* BANK SELECTION */}
           <div>
-            <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-2 mb-2 block">Account Name</label>
-            <input 
-              required
-              type="text" 
-              placeholder="e.g. Tobi Adeyemi"
-              className="w-full p-5 bg-gray-50 border-2 border-transparent rounded-2xl font-bold outline-none focus:border-black transition-all"
-              value={bankData.accountName}
-              onChange={(e) => setBankData({...bankData, accountName: e.target.value})}
-            />
+            <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-2 mb-2 block">Choose Bank</label>
+            <div className="relative">
+              <select 
+                required
+                className="w-full p-5 bg-gray-50 border-2 border-transparent rounded-2xl font-bold outline-none focus:border-black transition-all appearance-none cursor-pointer"
+                value={bankData.bankCode}
+                onChange={(e) => {
+                  const selectedBank = banks.find(b => b.code === e.target.value);
+                  setBankData({
+                    ...bankData, 
+                    bankCode: e.target.value, 
+                    bankName: selectedBank ? selectedBank.name : ""
+                  });
+                }}
+              >
+                <option value="">Select a Nigerian Bank</option>
+                {banks.map((bank) => (
+                  <option key={bank.id} value={bank.code}>{bank.name}</option>
+                ))}
+              </select>
+              <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none">
+                <Search className="h-4 w-4 text-gray-400" />
+              </div>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-2 mb-2 block">Account Number</label>
+          {/* ACCOUNT NUMBER */}
+          <div>
+            <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-2 mb-2 block">Account Number</label>
+            <div className="relative">
               <input 
                 required
                 type="text" 
                 maxLength="10"
                 placeholder="0123456789"
-                className="w-full p-5 bg-gray-50 border-2 border-transparent rounded-2xl font-bold outline-none focus:border-black transition-all"
+                className="w-full p-5 bg-gray-50 border-2 border-transparent rounded-2xl font-mono font-bold outline-none focus:border-black transition-all"
                 value={bankData.accountNumber}
-                onChange={(e) => setBankData({...bankData, accountNumber: e.target.value})}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/\D/g, ''); // Numbers only
+                  setBankData({...bankData, accountNumber: val});
+                }}
               />
+              <div className="absolute right-5 top-1/2 -translate-y-1/2">
+                {verifying && <Loader2 className="h-5 w-5 animate-spin text-gray-400" />}
+              </div>
             </div>
-            <div>
-              <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-2 mb-2 block">Bank Name</label>
-              <input 
-                required
-                type="text" 
-                placeholder="e.g. GTBank"
-                className="w-full p-5 bg-gray-50 border-2 border-transparent rounded-2xl font-bold outline-none focus:border-black transition-all"
-                value={bankData.bankName}
-                onChange={(e) => setBankData({...bankData, bankName: e.target.value})}
-              />
+          </div>
+
+          {/* ACCOUNT NAME (VERIFIED RESULT) */}
+          <div className="relative">
+            <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-2 mb-2 block">Account Name (Auto-Verified)</label>
+            <div className={`w-full p-5 rounded-2xl border-2 font-black text-sm flex items-center justify-between ${
+              bankData.accountName && bankData.accountName !== "Verification Failed" 
+                ? 'bg-emerald-50 border-emerald-100 text-emerald-900' 
+                : 'bg-gray-50 border-transparent text-gray-400'
+            }`}>
+              <span>{bankData.accountName || "Waiting for details..."}</span>
+              {bankData.accountName && bankData.accountName !== "Verification Failed" && (
+                <CheckCircle className="h-5 w-5 text-emerald-500" />
+              )}
+              {bankData.accountName === "Verification Failed" && (
+                <AlertCircle className="h-5 w-5 text-red-500" />
+              )}
             </div>
           </div>
 
           <button 
             type="submit" 
-            disabled={saving}
-            className="w-full bg-black text-white py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-[#a3dcf3] hover:text-black transition-all disabled:opacity-50 mt-4"
+            disabled={saving || verifying || !bankData.accountName || bankData.accountName === "Verification Failed"}
+            className="w-full bg-black text-white py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-[#a3dcf3] hover:text-black transition-all disabled:opacity-20 mt-4 shadow-xl"
           >
-            {saving ? "Encrypting & Saving..." : "Update Bank Details"}
+            {saving ? "Encrypting & Saving..." : "Lock Bank Details"}
           </button>
         </form>
 
-        <div className="mt-8 p-4 bg-blue-50 rounded-2xl flex gap-4">
-          <div className="text-blue-500">
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" /></svg>
+        <div className="mt-8 p-6 bg-blue-50/50 rounded-[2rem] flex gap-4 border border-blue-100/50">
+          <div className="text-blue-500 shrink-0">
+            <AlertCircle className="w-5 h-5" />
           </div>
-          <p className="text-[10px] text-blue-700 font-bold leading-relaxed uppercase">
-            Double check your account number. Payments sent to wrong accounts cannot be reversed.
+          <p className="text-[9px] text-blue-700 font-black leading-relaxed uppercase tracking-tighter">
+            System uses direct settlement rails. Ensure the account name shown above matches your legal ID to avoid payment flags.
           </p>
         </div>
       </main>

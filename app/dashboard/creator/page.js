@@ -19,7 +19,9 @@ import { auth, db } from "@/lib/firebase";
 
 import GlobalNotification from "@/app/components/GlobalNotification";
 import CreatorNavbar from "@/app/components/CreatorNavbar";
-import { Sparkles, Briefcase, MessageSquare, CheckCircle2, Clock, ArrowRight, ShieldCheck } from "lucide-react";
+
+import SubmissionModal from "@/app/components/SubmissionModal";
+import { Sparkles, Briefcase, MessageSquare, CheckCircle2, Clock, ArrowRight, ShieldCheck, Send } from "lucide-react";
 
 export default function CreatorDashboard() {
   const router = useRouter();
@@ -29,6 +31,10 @@ export default function CreatorDashboard() {
   const [activeChats, setActiveChats] = useState([]);
   const [loading, setLoading] = useState(true);
   const [applyingId, setApplyingId] = useState(null);
+
+  // MODAL STATES
+  const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
+  const [activeCampaignForSubmission, setActiveCampaignForSubmission] = useState(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -44,14 +50,13 @@ export default function CreatorDashboard() {
           setUserData(userDoc.data());
         }
 
-        // 2. Fetch AVAILABLE campaigns
-        // ✅ FIX: Changed status filter to "open" so creators only see unassigned campaigns
+        // 2. Fetch AVAILABLE & ASSIGNED campaigns
+        // We fetch "open" (for marketplace) AND "assigned" (so they can submit proof)
         const campaignQuery = query(
           collection(db, "campaigns"),
-          where("status", "==", "open") 
+          where("status", "in", ["open", "assigned", "in_review", "completed"]) 
         );
         
-        // Use onSnapshot here if you want the list to disappear instantly when another creator accepts
         const unsubscribeCampaigns = onSnapshot(campaignQuery, (snapshot) => {
           const campaignList = snapshot.docs.map((d) => ({
             id: d.id,
@@ -207,16 +212,15 @@ export default function CreatorDashboard() {
           </div>
         </div>
 
-        {/* --- SECTION 2: OPPORTUNITIES --- */}
+        {/* --- SECTION 2: OPPORTUNITIES & SUBMISSIONS --- */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 pt-8 border-t border-gray-100">
           
-          {/* GIGS LIST */}
           <div className="lg:col-span-8 space-y-6">
             <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-bold uppercase tracking-tighter text-gray-900 flex items-center gap-2">
-                    <Briefcase className="h-4 w-4 text-gray-400" /> Open Opportunities
+                    <Briefcase className="h-4 w-4 text-gray-400" /> Active Opportunities
                 </h3>
-                <span className="text-[10px] font-bold bg-gray-100 px-2 py-1 rounded text-gray-500">{campaigns.length} Available</span>
+                <span className="text-[10px] font-bold bg-gray-100 px-2 py-1 rounded text-gray-500">{campaigns.length} total</span>
             </div>
 
             {campaigns.length === 0 ? (
@@ -227,6 +231,7 @@ export default function CreatorDashboard() {
               campaigns.map((c) => {
                 const status = appliedCampaigns[c.id];
                 const isFunded = c.paymentStatus === "escrow_locked";
+                const isAssignedToMe = c.assignedCreatorId === auth.currentUser?.uid;
 
                 return (
                   <div key={c.id} className="group bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-all overflow-hidden">
@@ -239,6 +244,11 @@ export default function CreatorDashboard() {
                                 {isFunded && (
                                     <div className="bg-emerald-50 text-emerald-700 border border-emerald-100 text-[10px] font-bold px-3 py-1 rounded flex items-center gap-1">
                                         <CheckCircle2 className="h-3 w-3" /> Budget Secured
+                                    </div>
+                                )}
+                                {isAssignedToMe && (
+                                    <div className="bg-[#a3dcf3]/10 text-black border border-[#a3dcf3]/30 text-[10px] font-black px-3 py-1 rounded uppercase italic">
+                                        Active Project
                                     </div>
                                 )}
                             </div>
@@ -255,32 +265,56 @@ export default function CreatorDashboard() {
 
                         <div className="flex items-center justify-between pt-6 border-t border-gray-50">
                             <div className="flex items-center gap-4 text-gray-400">
-                                <div className="flex items-center gap-1 text-[11px] font-bold uppercase">
-                                    <Clock className="h-3.5 w-3.5" /> Live Opportunity
+                                <div className="flex items-center gap-1 text-[11px] font-bold uppercase italic">
+                                    <Clock className="h-3.5 w-3.5" /> 
+                                    {c.status === "in_review" ? "Awaiting Brand Approval" : c.status === "completed" ? "Settled" : "Live Opportunity"}
                                 </div>
                             </div>
                             
-                            {status ? (
-                              <div className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider border ${
-                                status === "pending" ? "bg-amber-50 text-amber-600 border-amber-100" : 
-                                status === "accepted" ? "bg-emerald-50 text-emerald-600 border-emerald-100" : 
-                                "bg-red-50 text-red-600 border-red-100"
-                              }`}>
-                                {status}
-                              </div>
+                            {/* LOGIC FOR SUBMITTING PROOF OR APPLYING */}
+                            {isAssignedToMe ? (
+                                <>
+                                    {c.status === "assigned" ? (
+                                        <button
+                                            onClick={() => {
+                                                setActiveCampaignForSubmission(c);
+                                                setIsSubmitModalOpen(true);
+                                            }}
+                                            className="bg-black text-[#a3dcf3] px-8 py-3 rounded-xl text-xs font-black uppercase tracking-[0.2em] hover:bg-gray-900 transition-all flex items-center gap-2 shadow-lg shadow-[#a3dcf3]/10"
+                                        >
+                                            Submit Proof <Send className="h-3.5 w-3.5" />
+                                        </button>
+                                    ) : (
+                                        <div className="text-[10px] font-black uppercase bg-gray-100 text-gray-400 px-6 py-3 rounded-xl border border-gray-200">
+                                            {c.status === "in_review" ? "Pending Approval" : "Completed"}
+                                        </div>
+                                    )}
+                                </>
                             ) : (
-                              <button
-                                onClick={() => applyToCampaign(c.id)}
-                                disabled={applyingId === c.id || !isFunded}
-                                className={`px-8 py-3 rounded-lg text-xs font-bold uppercase tracking-widest transition-all flex items-center gap-2 ${
-                                  isFunded 
-                                  ? "bg-black text-white hover:bg-gray-800 shadow-lg shadow-black/10" 
-                                  : "bg-gray-100 text-gray-400 cursor-not-allowed"
-                                }`}
-                              >
-                                {applyingId === c.id ? "Applying..." : "Submit Proposal"}
-                                <ArrowRight className="h-4 w-4" />
-                              </button>
+                                <>
+                                    {status ? (
+                                      <div className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider border ${
+                                        status === "pending" ? "bg-amber-50 text-amber-600 border-amber-100" : 
+                                        status === "accepted" ? "bg-emerald-50 text-emerald-600 border-emerald-100" : 
+                                        "bg-red-50 text-red-600 border-red-100"
+                                      }`}>
+                                        {status}
+                                      </div>
+                                    ) : (
+                                      <button
+                                        onClick={() => applyToCampaign(c.id)}
+                                        disabled={applyingId === c.id || !isFunded || c.status !== "open"}
+                                        className={`px-8 py-3 rounded-lg text-xs font-bold uppercase tracking-widest transition-all flex items-center gap-2 ${
+                                          isFunded && c.status === "open"
+                                          ? "bg-black text-white hover:bg-gray-800 shadow-lg shadow-black/10" 
+                                          : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                                        }`}
+                                      >
+                                        {applyingId === c.id ? "Applying..." : "Submit Proposal"}
+                                        <ArrowRight className="h-4 w-4" />
+                                      </button>
+                                    )}
+                                </>
                             )}
                         </div>
                     </div>
@@ -309,13 +343,24 @@ export default function CreatorDashboard() {
             <div className="bg-black text-white rounded-2xl p-6 shadow-xl">
                 <p className="text-[9px] font-black uppercase tracking-[0.2em] text-[#a3dcf3] mb-2">Creator Tip</p>
                 <p className="text-xs font-medium leading-relaxed">
-                  Keeping your bio updated increases your chances of proposal acceptance by 40%.
+                  Always double-check your submission links. Broken links can delay your payout settlement by up to 48 hours.
                 </p>
             </div>
           </div>
-
         </div>
       </main>
+
+      {/* SUBMISSION MODAL INTEGRATION */}
+      {activeCampaignForSubmission && (
+        <SubmissionModal 
+            isOpen={isSubmitModalOpen}
+            onClose={() => {
+                setIsSubmitModalOpen(false);
+                setActiveCampaignForSubmission(null);
+            }}
+            campaign={activeCampaignForSubmission}
+        />
+      )}
     </div>
   );
 }

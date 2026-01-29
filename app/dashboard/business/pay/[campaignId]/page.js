@@ -4,7 +4,17 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
-import { ShieldCheck, CreditCard, Lock, ArrowLeft } from "lucide-react";
+import { 
+  ShieldCheck, 
+  CreditCard, 
+  Lock, 
+  X, 
+  Loader2, 
+  CheckCircle2, 
+  Info,
+  Twitter,
+  LogOut 
+} from "lucide-react";
 
 export default function PaymentPage() {
   const { campaignId } = useParams();
@@ -12,164 +22,182 @@ export default function PaymentPage() {
   const [campaign, setCampaign] = useState(null);
   const [processing, setProcessing] = useState(false);
 
-  // 1. FETCH CAMPAIGN DATA ON LOAD
   useEffect(() => {
     const fetchCampaign = async () => {
       if (!campaignId) return;
-      
       try {
         const docRef = doc(db, "campaigns", campaignId);
         const snap = await getDoc(docRef);
-        
         if (snap.exists()) {
           setCampaign({ id: snap.id, ...snap.data() });
         } else {
-          // If the campaign doesn't exist, send them back
           router.push("/dashboard/business");
         }
       } catch (err) {
         console.error("Error fetching campaign for payment:", err);
       }
     };
-    
     fetchCampaign();
   }, [campaignId, router]);
 
-  // 2. CALCULATE BUDGET AND FEES
-  // Budget is pulled from Firestore, we add a 5% platform/escrow fee
   const platformFee = campaign ? campaign.budget * 0.05 : 0;
   const totalAmount = campaign ? campaign.budget + platformFee : 0;
 
-  // 3. INTEGRATED PAYSTACK POPUP HANDLER
   const handlePayment = () => {
-    // Safety check: ensure the Paystack script from layout.js is loaded
     if (!window.PaystackPop) {
-      alert("Payment processor is still loading. Please wait a few seconds and try again.");
+      alert("Payment processor is still loading...");
       return;
     }
-
     setProcessing(true);
-
     const handler = window.PaystackPop.setup({
-      key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY, // Pulled from your .env.local
+      key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY, 
       email: auth.currentUser?.email,
-      amount: Math.round(totalAmount * 100), // MUST be an integer in Kobo
+      amount: Math.round(totalAmount * 100), 
       currency: "NGN",
-      metadata: {
-        campaignId: campaign.id,
-        businessId: auth.currentUser?.uid,
-        totalWithFee: totalAmount,
-      },
+      metadata: { campaignId: campaign.id, businessId: auth.currentUser?.uid, totalWithFee: totalAmount },
       callback: function (response) {
-        // SUCCESS: The money is now with Paystack.
-        // The Webhook (api/paystack/webhook/route.js) will handle the 
-        // database update to 'escrow_locked' for security.
         setProcessing(false);
         router.push(`/dashboard/business/pay/success?ref=${response.reference}`);
       },
       onClose: function () {
-        // CANCELLED: The user closed the window without paying
         setProcessing(false);
-        alert("Transaction cancelled. No funds were debited from your account.");
       },
     });
-
     handler.openIframe();
   };
 
-  // 4. LOADING STATE
   if (!campaign) return (
     <div className="min-h-screen flex items-center justify-center bg-white">
-      <div className="flex flex-col items-center">
-        <div className="h-8 w-8 border-4 border-t-black border-gray-200 rounded-full animate-spin mb-4"></div>
-        <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Generating Secure Invoice...</p>
-      </div>
+      <Loader2 className="h-10 w-10 animate-spin text-[#a3dcf3]" />
     </div>
   );
 
-  // 5. MAIN UI
   return (
-    <div className="min-h-screen bg-[#F9FAFB] flex flex-col items-center justify-center p-4">
-      
-      {/* Back Navigation */}
-      <button 
-        onClick={() => router.back()}
-        className="mb-8 flex items-center gap-2 text-[10px] font-bold uppercase text-gray-400 hover:text-black transition-all"
-      >
-        <ArrowLeft className="h-3 w-3" /> Return to Studio
-      </button>
-
-      {/* Payment Card */}
-      <div className="max-w-md w-full bg-white rounded-[3rem] shadow-2xl border border-gray-100 p-8 md:p-12 relative overflow-hidden">
-        
-        {/* Decorative Shield Icon */}
-        <div className="absolute top-0 right-0 p-8">
-          <ShieldCheck className="h-8 w-8 text-emerald-500 opacity-10" />
+    <div className="min-h-screen bg-[#F9FAFB] text-[#001E00] font-sans antialiased">
+      {/* STICKY NAV WITH EXIT ICON */}
+      <nav className="h-14 md:h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 md:px-12 sticky top-0 z-50">
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={() => router.push("/dashboard/business")}
+            className="p-1.5 hover:bg-gray-100 rounded-lg transition-all text-gray-500 hover:text-black"
+            aria-label="Exit and return to dashboard"
+          >
+            <X className="h-5 w-5" />
+          </button>
+          <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Secure Checkout</span>
         </div>
 
-        {/* Header Section */}
-        <div className="text-center mb-12">
-          <div className="h-20 w-20 bg-emerald-50 text-emerald-600 rounded-[2rem] flex items-center justify-center mx-auto mb-6 transform rotate-6 border border-emerald-100">
-            <Lock className="w-10 h-10" />
+        <div className="flex items-center gap-4">
+            <div className="hidden sm:flex items-center gap-2">
+                <div className="h-2 w-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Encrypted Session</span>
+            </div>
+        </div>
+      </nav>
+
+      <main className="max-w-2xl mx-auto px-4 py-8 md:py-16 flex flex-col items-center">
+        {/* Payment Card */}
+        <div className="w-full bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden relative">
+          
+          <div className="h-1.5 w-full bg-[#a3dcf3]/10">
+            <div className="h-full bg-[#a3dcf3] w-full animate-in slide-in-from-left duration-1000"></div>
           </div>
-          <h1 className="text-3xl font-black tracking-tighter text-gray-900 uppercase">Secure Escrow</h1>
-          <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mt-2">
-            Invoice Ref: {campaign.id.substring(0, 8).toUpperCase()}
-          </p>
-        </div>
 
-        {/* Invoice Summary Box */}
-        <div className="bg-gray-50 rounded-[2.5rem] p-8 mb-10 border border-gray-100">
-          <div className="space-y-5">
-            <div className="flex justify-between text-[11px]">
-              <span className="text-gray-400 font-bold uppercase tracking-widest">Base Campaign Budget</span>
-              <span className="font-black text-gray-900 font-mono">₦{campaign.budget.toLocaleString()}</span>
+          <div className="p-6 md:p-12">
+            {/* Header */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <ShieldCheck className="h-4 w-4 text-emerald-500" />
+                  <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Escrow Protection Active</span>
+                </div>
+                <h1 className="text-2xl md:text-3xl font-serif font-medium text-gray-900">Finalize Deposit</h1>
+                <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mt-1">
+                  ID: {campaign.id.substring(0, 12).toUpperCase()}
+                </p>
+              </div>
+              <div className="h-12 w-12 bg-[#F9FAFB] border border-gray-100 rounded-xl flex items-center justify-center">
+                <Lock className="w-5 h-5 text-gray-900" />
+              </div>
             </div>
-            <div className="flex justify-between text-[11px]">
-              <span className="text-gray-400 font-bold uppercase tracking-widest">Escrow Service Fee (5%)</span>
-              <span className="font-black text-gray-900 font-mono">₦{platformFee.toLocaleString()}</span>
+
+            {/* Campaign Summary Box */}
+            <div className="mb-8 bg-[#F9FAFB] border border-gray-100 rounded-xl p-4 md:p-6 flex items-center justify-between">
+              <div className="flex items-center gap-4 overflow-hidden">
+                <div className="h-10 w-10 bg-black rounded-lg flex items-center justify-center text-[#a3dcf3] shrink-0">
+                  {campaign.platform === "Twitter" ? <Twitter className="h-5 w-5" /> : <CheckCircle2 className="h-5 w-5" />}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1 text-nowrap">Briefing</p>
+                  <p className="text-sm font-bold text-gray-900 truncate">{campaign.title}</p>
+                </div>
+              </div>
+              <div className="text-right hidden sm:block">
+                <p className="text-[9px] font-bold text-gray-400 uppercase leading-none mb-1">Platform</p>
+                <p className="text-sm font-bold text-gray-900">{campaign.platform}</p>
+              </div>
             </div>
-            
-            {/* Divider */}
-            <div className="h-[1px] bg-gray-200 w-full" />
-            
-            <div className="flex justify-between items-center pt-2">
-              <span className="text-gray-900 font-black uppercase text-xs tracking-tighter">Total Deposit</span>
-              <span className="text-4xl font-black text-gray-900 tracking-tight">
-                ₦{totalAmount.toLocaleString()}
-              </span>
+
+            {/* Price Breakdown */}
+            <div className="space-y-4 mb-10">
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-500">Project Budget</span>
+                <span className="font-bold">₦{campaign.budget.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-500 flex items-center gap-1.5">
+                  Escrow Fee (5%) <Info className="h-3 w-3 text-gray-300" />
+                </span>
+                <span className="font-bold">₦{platformFee.toLocaleString()}</span>
+              </div>
+              
+              <div className="pt-6 border-t border-gray-100 flex justify-between items-end">
+                <div>
+                  <p className="text-[10px] font-black text-black uppercase tracking-widest mb-1">Total to Secure</p>
+                  <p className="text-gray-400 text-[9px] leading-tight max-w-[140px]">Released only on approval.</p>
+                </div>
+                <span className="text-3xl md:text-4xl font-serif font-medium text-gray-900">
+                  ₦{totalAmount.toLocaleString()}
+                </span>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="space-y-4">
+              <button 
+                onClick={handlePayment}
+                disabled={processing}
+                className="w-full bg-black text-white py-4 md:py-5 rounded-full font-bold text-xs uppercase tracking-[0.2em] hover:bg-gray-800 transition-all disabled:opacity-50 flex items-center justify-center gap-3 shadow-xl"
+              >
+                {processing ? (
+                  <Loader2 className="h-4 w-4 animate-spin text-[#a3dcf3]" />
+                ) : (
+                  <>
+                    <CreditCard className="h-4 w-4 text-[#a3dcf3]" /> Pay via Paystack
+                  </>
+                )}
+              </button>
+              
+              <button 
+                onClick={() => router.back()}
+                className="w-full py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest hover:text-black transition-all"
+              >
+                Go back & edit details
+              </button>
             </div>
           </div>
         </div>
 
-        {/* Action Button */}
-        <button 
-          onClick={handlePayment}
-          disabled={processing}
-          className="w-full bg-black text-white py-6 rounded-3xl font-black text-xs uppercase tracking-[0.2em] hover:bg-[#a3dcf3] hover:text-black transition-all disabled:opacity-50 flex items-center justify-center gap-3 shadow-xl active:scale-95"
-        >
-          {processing ? (
-            <span className="animate-pulse">Initializing Terminal...</span>
-          ) : (
-            <>
-              <CreditCard className="h-4 w-4" /> Initialize Secure Payment
-            </>
-          )}
-        </button>
-        
-        {/* Trust Footer */}
-        <div className="mt-10 flex flex-col items-center gap-3">
-          <div className="flex items-center gap-2">
-             <div className="h-1.5 w-1.5 bg-emerald-500 rounded-full animate-ping" />
-             <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">
-              Live Escrow Node Active
+        {/* Security Footer */}
+        <div className="mt-8 flex flex-col items-center gap-4 text-center">
+            <div className="flex items-center gap-4 opacity-50 grayscale">
+                <img src="/paystack-logo.png" alt="Paystack" className="h-4" />
+            </div>
+            <p className="text-[10px] text-gray-400 max-w-xs leading-relaxed">
+                UseMyCreator uses bank-level encryption. Your payment details are never stored on our servers.
             </p>
-          </div>
-          <p className="text-[8px] text-gray-300 font-medium text-center px-4">
-            Funds are locked in a neutral account and released only after content approval.
-          </p>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

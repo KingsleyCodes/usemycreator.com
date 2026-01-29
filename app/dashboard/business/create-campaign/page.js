@@ -5,11 +5,20 @@ import { useRouter } from "next/navigation";
 import { auth, db } from "@/lib/firebase";
 import { collection, addDoc, serverTimestamp, doc, getDoc } from "firebase/firestore";
 import { signOut, onAuthStateChanged } from "firebase/auth";
+import { 
+  X, 
+  ChevronRight, 
+  ShieldCheck, 
+  Loader2, 
+  LogOut,
+  ChevronLeft,
+  Twitter
+} from "lucide-react";
 
 export default function CreateCampaign() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [step, setStep] = useState(1); // Track current step
+  const [step, setStep] = useState(1); 
   const [businessProfile, setBusinessProfile] = useState(null);
   
   const [formData, setFormData] = useState({
@@ -22,7 +31,23 @@ export default function CreateCampaign() {
     paymentStatus: "unfunded" 
   });
 
-  // Fetch Business details on mount to ensure we have the email/name for the campaign doc
+  // 1. PERSISTENCE: Load draft from localStorage on initial mount
+  useEffect(() => {
+    const savedDraft = localStorage.getItem("campaignDraft");
+    if (savedDraft) {
+      try {
+        setFormData(JSON.parse(savedDraft));
+      } catch (err) {
+        console.error("Error parsing saved draft:", err);
+      }
+    }
+  }, []);
+
+  // 2. PERSISTENCE: Save to localStorage whenever formData changes
+  useEffect(() => {
+    localStorage.setItem("campaignDraft", JSON.stringify(formData));
+  }, [formData]);
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
@@ -46,29 +71,31 @@ export default function CreateCampaign() {
     }
   };
 
-  const nextStep = () => {
+  const nextStep = (e) => {
+    e.preventDefault();
     if (step === 1 && (!formData.title || !formData.description)) {
       return alert("Please fill in the title and description.");
     }
     setStep(2);
+    window.scrollTo(0, 0); 
   };
 
-  const prevStep = () => setStep(1);
+  const prevStep = () => {
+    setStep(1);
+    window.scrollTo(0, 0);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!auth.currentUser) return alert("You must be logged in.");
-    if (!businessProfile) return alert("Business profile not found. Please complete setup.");
     if (Number(formData.budget) <= 0) return alert("Please set a valid budget.");
 
     setLoading(true);
     try {
-      // 1. Save campaign to Firestore
-      // NOTE: We now include businessName and businessEmail for notification efficiency
       const docRef = await addDoc(collection(db, "campaigns"), {
         businessId: auth.currentUser.uid,
-        businessName: businessProfile.companyName || businessProfile.name || "A Brand",
-        businessEmail: auth.currentUser.email || businessProfile.email || businessProfile.contactEmail,
+        businessName: businessProfile?.companyName || "A Brand",
+        businessEmail: auth.currentUser.email,
         title: formData.title.trim(),
         description: formData.description.trim(),
         platform: formData.platform,
@@ -79,8 +106,9 @@ export default function CreateCampaign() {
         createdAt: serverTimestamp(),
       });
 
-      // 2. Trigger the Broadcast API to notify all creators
-      // We send the platform and budget so the email looks professional
+      // Clear the draft after successful submission
+      localStorage.removeItem("campaignDraft");
+
       fetch('/api/broadcast-campaign', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -91,7 +119,6 @@ export default function CreateCampaign() {
         }),
       }).catch(err => console.error("Broadcast notification failed:", err));
       
-      // 3. Redirect to the Paystack payment initialization page
       router.push(`/dashboard/business/pay/${docRef.id}`);
 
     } catch (err) {
@@ -103,153 +130,183 @@ export default function CreateCampaign() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-6 px-4 relative font-sans overflow-hidden">
-      
-      {/* SIGN OUT */}
-      <button 
-        onClick={handleSignOut}
-        className="absolute top-6 left-6 text-[10px] font-black text-gray-400 hover:text-red-500 transition-colors uppercase tracking-[0.2em] z-50"
-      >
-        Sign Out
-      </button>
+    <div className="min-h-screen bg-[#F9FAFB] text-[#001E00] font-sans antialiased">
+      {/* COMPACT NAV WITH EXIT BUTTON */}
+      <nav className="h-14 md:h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 md:px-12 sticky top-0 z-50">
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={() => router.push("/dashboard/business")}
+            className="p-1.5 hover:bg-gray-100 rounded-lg transition-all text-gray-500 hover:text-black"
+            aria-label="Exit"
+          >
+            <X className="h-5 w-5" />
+          </button>
+          <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Step {step} of 2</span>
+        </div>
 
-      {/* MAIN CONTAINER: Limited height with internal scroll */}
-      <div className="max-w-2xl w-full bg-white shadow-[0_32px_64px_-15px_rgba(0,0,0,0.1)] rounded-[2.5rem] flex flex-col max-h-[90vh] border border-gray-100 relative">
-        
-        {/* FIXED EXIT BUTTON */}
         <button 
-          onClick={() => router.push("/dashboard/business")}
-          className="absolute top-6 right-6 h-10 w-10 flex items-center justify-center rounded-xl bg-gray-50 hover:bg-gray-100 text-gray-400 hover:text-black transition-all z-50"
+          onClick={handleSignOut}
+          className="text-[10px] font-bold text-gray-400 hover:text-red-600 transition-colors uppercase tracking-widest flex items-center gap-2"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
-          </svg>
+          <LogOut className="h-3.5 w-3.5" />
+          <span className="hidden sm:inline">Sign Out</span>
         </button>
+      </nav>
 
-        {/* HEADER: Fixed at top of card */}
-        <header className="p-8 pb-4">
-          <div className="flex items-center gap-2 mb-2">
-            <div className={`h-1 w-8 rounded-full ${step >= 1 ? 'bg-[#a3dcf3]' : 'bg-gray-100'}`} />
-            <div className={`h-1 w-8 rounded-full ${step === 2 ? 'bg-[#a3dcf3]' : 'bg-gray-100'}`} />
-          </div>
-          <h1 className="text-3xl font-black text-gray-900 tracking-tighter">
-            {step === 1 ? "The Brief" : "The Budget"}
-          </h1>
-          <p className="text-gray-400 text-sm font-medium">Step {step} of 2</p>
-        </header>
+      {/* PROGRESS BAR */}
+      <div className="w-full h-1 bg-gray-100">
+        <div 
+          className="h-full bg-[#a3dcf3] transition-all duration-500" 
+          style={{ width: `${(step / 2) * 100}%` }}
+        />
+      </div>
 
-        {/* SCROLLABLE FORM BODY */}
-        <div className="flex-1 overflow-y-auto px-8 pb-8 custom-scrollbar">
-          <form onSubmit={handleSubmit} className="space-y-6">
+      <main className="max-w-2xl mx-auto px-4 py-6 md:py-12">
+        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+          <div className="p-5 md:p-10">
             
             {step === 1 ? (
-              <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-                <div>
-                  <label className="block text-xs font-black text-gray-400 mb-2 uppercase tracking-widest">Campaign Title</label>
-                  <input
-                    required
-                    className="w-full border-2 border-gray-50 bg-gray-50/30 p-4 rounded-2xl focus:border-[#a3dcf3] focus:bg-white outline-none transition-all placeholder:text-gray-300 font-bold"
-                    placeholder="e.g. Summer Skincare Review"
-                    value={formData.title}
-                    onChange={(e) => setFormData({...formData, title: e.target.value})}
-                  />
-                </div>
+              /* --- PAGE 1: THE BRIEF --- */
+              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                <header className="mb-6">
+                  <h1 className="text-xl md:text-2xl font-serif font-medium mb-1">Create your brief</h1>
+                  <p className="text-xs text-gray-500">Tell creators exactly what you need.</p>
+                </header>
 
-                <div>
-                  <label className="block text-xs font-black text-gray-400 mb-2 uppercase tracking-widest">Target Platform</label>
-                  <select 
-                    className="w-full border-2 border-gray-50 bg-gray-50/30 p-4 rounded-2xl focus:border-[#a3dcf3] focus:bg-white outline-none font-bold"
-                    value={formData.platform}
-                    onChange={(e) => setFormData({...formData, platform: e.target.value})}
-                  >
-                    <option value="Instagram">Instagram</option>
-                    <option value="TikTok">TikTok</option>
-                    <option value="YouTube">YouTube</option>
-                  </select>
-                </div>
+                <div className="space-y-5">
+                  <div>
+                    <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-widest">Campaign Title</label>
+                    <input
+                      required
+                      className="w-full border border-gray-200 bg-white p-3 md:p-4 rounded-xl focus:border-[#a3dcf3] focus:ring-4 focus:ring-[#a3dcf3]/10 outline-none transition-all font-semibold text-sm"
+                      placeholder="e.g. Unboxing our new Skincare line"
+                      value={formData.title}
+                      onChange={(e) => setFormData({...formData, title: e.target.value})}
+                    />
+                  </div>
 
-                <div>
-                  <label className="block text-xs font-black text-gray-400 mb-2 uppercase tracking-widest">Deliverables & Requirements</label>
-                  <textarea
-                    required
-                    rows="5"
-                    className="w-full border-2 border-gray-50 bg-gray-50/30 p-4 rounded-2xl focus:border-[#a3dcf3] focus:bg-white outline-none transition-all resize-none font-medium"
-                    placeholder="Be specific: e.g. 1x 60-second Reel..."
-                    value={formData.description}
-                    onChange={(e) => setFormData({...formData, description: e.target.value})}
-                  />
-                </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-widest">Platform</label>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                      {["Instagram", "TikTok", "YouTube", "Twitter"].map((p) => (
+                        <button
+                          key={p}
+                          type="button"
+                          onClick={() => setFormData({...formData, platform: p})}
+                          className={`py-2.5 rounded-lg border text-[10px] font-bold transition-all flex items-center justify-center gap-1.5 ${formData.platform === p ? 'border-black bg-black text-white' : 'border-gray-200 bg-white text-gray-500'}`}
+                        >
+                          {p === "Twitter" && <Twitter className="h-3 w-3" />}
+                          {p}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
 
-                <button
-                  type="button"
-                  onClick={nextStep}
-                  className="w-full bg-black text-white py-5 rounded-2xl font-black text-lg shadow-lg hover:scale-[1.01] transition-all"
-                >
-                  NEXT: BUDGETING →
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-                <div>
-                  <label className="block text-xs font-black text-gray-400 mb-2 uppercase tracking-widest">Total Budget (₦)</label>
-                  <input
-                    required
-                    type="number"
-                    className="w-full border-2 border-gray-50 bg-gray-50/30 p-4 rounded-2xl focus:border-[#a3dcf3] focus:bg-white outline-none transition-all font-bold text-2xl"
-                    placeholder="0"
-                    value={formData.budget}
-                    onChange={(e) => setFormData({...formData, budget: e.target.value})}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-black text-gray-400 mb-2 uppercase tracking-widest">Escrow Strategy</label>
-                  <div className="grid grid-cols-2 gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setFormData({...formData, milestones: 'upfront'})}
-                      className={`p-4 rounded-xl border-2 transition-all text-xs font-black ${formData.milestones === 'upfront' ? 'border-[#a3dcf3] bg-[#a3dcf3]/5 text-black' : 'border-gray-50 text-gray-300'}`}
-                    >
-                      100% UPFRONT
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setFormData({...formData, milestones: 'split'})}
-                      className={`p-4 rounded-xl border-2 transition-all text-xs font-black ${formData.milestones === 'split' ? 'border-[#a3dcf3] bg-[#a3dcf3]/5 text-black' : 'border-gray-50 text-gray-300'}`}
-                    >
-                      50/50 SPLIT
-                    </button>
+                  <div>
+                    <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-widest">Deliverables</label>
+                    <textarea
+                      required
+                      rows="5"
+                      className="w-full border border-gray-200 bg-white p-3 md:p-4 rounded-xl focus:border-[#a3dcf3] focus:ring-4 focus:ring-[#a3dcf3]/10 outline-none transition-all resize-none text-sm"
+                      placeholder="Requirements, mentions, and key dates..."
+                      value={formData.description}
+                      onChange={(e) => setFormData({...formData, description: e.target.value})}
+                    />
                   </div>
                 </div>
 
-                <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100">
-                  <p className="text-[10px] text-blue-600 font-black uppercase tracking-widest mb-1">Escrow Protection</p>
-                  <p className="text-xs text-blue-800 font-medium leading-relaxed">
-                    Your ₦{Number(formData.budget).toLocaleString()} will be held safely and only released when you approve the content.
-                  </p>
-                </div>
-
-                <div className="flex gap-3">
+                <div className="pt-4">
                   <button
                     type="button"
-                    onClick={prevStep}
-                    className="flex-1 bg-gray-100 text-gray-600 py-5 rounded-2xl font-black text-sm uppercase tracking-widest"
+                    onClick={nextStep}
+                    className="w-full bg-black text-white py-4 rounded-full font-bold text-xs uppercase tracking-widest shadow-md hover:bg-gray-800 flex items-center justify-center gap-2"
                   >
-                    Back
+                    Next: Set Budget <ChevronRight className="h-3 w-3 text-[#a3dcf3]" />
                   </button>
+                </div>
+              </div>
+            ) : (
+              /* --- PAGE 2: THE BUDGET --- */
+              <div className="space-y-6 animate-in fade-in slide-in-from-right-2 duration-500">
+                <header className="mb-6">
+                  <h1 className="text-xl md:text-2xl font-serif font-medium mb-1">Budget & Payments</h1>
+                  <p className="text-xs text-gray-500">Secure your funds in our escrow system.</p>
+                </header>
+
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-widest">Budget (₦)</label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-gray-400 text-lg">₦</span>
+                      <input
+                        required
+                        type="number"
+                        className="w-full border border-gray-200 bg-white pl-10 pr-4 py-4 rounded-xl focus:border-[#a3dcf3] outline-none font-bold text-2xl"
+                        placeholder="0"
+                        value={formData.budget}
+                        onChange={(e) => setFormData({...formData, budget: e.target.value})}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-widest">Escrow Terms</label>
+                    <div className="grid grid-cols-1 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setFormData({...formData, milestones: 'upfront'})}
+                        className={`p-4 rounded-xl border transition-all text-left flex justify-between items-center ${formData.milestones === 'upfront' ? 'border-[#a3dcf3] bg-[#a3dcf3]/5 text-black' : 'border-gray-100 bg-gray-50 text-gray-400'}`}
+                      >
+                        <div>
+                          <p className="text-xs font-bold uppercase">100% Upfront</p>
+                          <p className="text-[10px] text-gray-500">Funds released after final approval.</p>
+                        </div>
+                        {formData.milestones === 'upfront' && <ShieldCheck className="h-4 w-4 text-black" />}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setFormData({...formData, milestones: 'split'})}
+                        className={`p-4 rounded-xl border transition-all text-left flex justify-between items-center ${formData.milestones === 'split' ? 'border-[#a3dcf3] bg-[#a3dcf3]/5 text-black' : 'border-gray-100 bg-gray-50 text-gray-400'}`}
+                      >
+                        <div>
+                          <p className="text-xs font-bold uppercase">50/50 Split</p>
+                          <p className="text-[10px] text-gray-500">Deposit now, balance on completion.</p>
+                        </div>
+                        {formData.milestones === 'split' && <ShieldCheck className="h-4 w-4 text-black" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="bg-[#f0f9ff] p-4 rounded-xl flex gap-3">
+                    <ShieldCheck className="h-5 w-5 text-blue-600 shrink-0" />
+                    <p className="text-[10px] text-blue-800 leading-normal">
+                      Funds are held securely. You only pay when you approve the creator's submission.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="pt-4 flex flex-col gap-3">
                   <button
                     type="submit"
                     disabled={loading}
-                    className="flex-[2] bg-black text-white py-5 rounded-2xl font-black text-lg shadow-xl hover:scale-[1.01] transition-all disabled:opacity-50"
+                    onClick={handleSubmit}
+                    className="w-full bg-black text-white py-4 rounded-full font-bold text-xs uppercase tracking-widest shadow-lg flex items-center justify-center gap-3 disabled:opacity-50"
                   >
-                    {loading ? "INITIALIZING..." : "LAUNCH →"}
+                    {loading ? <Loader2 className="h-4 w-4 animate-spin text-[#a3dcf3]" /> : "Publish Campaign"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={prevStep}
+                    className="w-full text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center justify-center gap-1 hover:text-black transition-all"
+                  >
+                    <ChevronLeft className="h-3.5 w-3.5" /> Back to Brief
                   </button>
                 </div>
               </div>
             )}
-          </form>
+          </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

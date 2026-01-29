@@ -1,65 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { db, auth } from "@/lib/firebase";
-import { 
-  collection, 
-  query, 
-  where, 
-  onSnapshot, 
-  doc, 
-  updateDoc, 
-  serverTimestamp,
-  orderBy 
-} from "firebase/firestore";
-import { onAuthStateChanged } from "firebase/auth";
+import { useState } from "react";
+import { useAdminData } from "../useAdminData";
+import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import { 
   CheckCircle, 
   Clock, 
-  ExternalLink, 
   Banknote, 
-  User, 
-  Search, 
   ShieldCheck,
-  AlertCircle,
   ArrowLeft
 } from "lucide-react";
 
 export default function AdminPayouts() {
-  const router = useRouter();
-  const [payouts, setPayouts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { payouts, loading } = useAdminData();
   const [filter, setFilter] = useState("pending"); // pending, completed
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (!user) {
-        router.push("/dashboard/admin/login");
-        return;
-      }
-
-      // 1. Listen for Withdrawal Requests
-      const q = query(
-        collection(db, "withdrawals"), 
-        where("status", "==", filter),
-        orderBy("createdAt", "desc")
-      );
-
-      const unsubPayouts = onSnapshot(q, (snap) => {
-        setPayouts(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-        setLoading(false);
-      }, (err) => {
-        console.error("Access Denied or Query Error:", err);
-        setLoading(false);
-      });
-
-      return () => unsubPayouts();
-    });
-
-    return () => unsubscribe();
-  }, [router, filter]);
-
+  // --- ACTIONS ---
   const markAsPaid = async (payoutId) => {
     const confirmPay = confirm("Have you manually transferred this money via your bank app? This will notify the creator.");
     if (!confirmPay) return;
@@ -76,23 +33,25 @@ export default function AdminPayouts() {
     }
   };
 
+  // Logic to filter the data based on your toggle
+  const filteredPayouts = payouts.filter(p => p.status === filter);
+
   if (loading) return (
-    <div className="h-screen flex items-center justify-center bg-black text-white font-black uppercase text-[10px] tracking-widest animate-pulse">
+    <div className="h-[60vh] flex items-center justify-center text-black font-black uppercase text-[10px] tracking-widest animate-pulse">
       Securing Treasury Access...
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-white text-black font-sans">
+    <div className="min-h-screen bg-white text-black font-sans pb-32">
       
       {/* ADMIN HEADER */}
       <header className="border-b border-gray-100 p-8">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div>
-            <button onClick={() => router.back()} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-black mb-4 transition-colors">
-              <ArrowLeft className="h-3 w-3" /> Back to Terminal
-            </button>
-            <h1 className="text-4xl font-black uppercase italic tracking-tighter">Treasury <span className="text-[#a3dcf3]">Settlement.</span></h1>
+            <h1 className="text-4xl font-black uppercase italic tracking-tighter">
+              Treasury <span className="text-[#a3dcf3]">Settlement.</span>
+            </h1>
           </div>
 
           <div className="flex bg-gray-100 p-1.5 rounded-2xl">
@@ -112,40 +71,42 @@ export default function AdminPayouts() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto p-8">
-        {payouts.length === 0 ? (
+      <main className="p-8">
+        {filteredPayouts.length === 0 ? (
           <div className="py-32 text-center border-2 border-dashed border-gray-100 rounded-[3rem]">
             <CheckCircle className="h-12 w-12 text-gray-200 mx-auto mb-4" />
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-300">Treasury Queue is Empty</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-300">
+              {filter === "pending" ? "Treasury Queue is Empty" : "No Payout History Found"}
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4">
-            {payouts.map((p) => (
-              <div key={p.id} className="group bg-white border border-gray-100 rounded-[2.5rem] p-8 hover:border-black transition-all flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8">
+            {filteredPayouts.map((p) => (
+              <div key={p.id} className="group bg-white border border-gray-100 rounded-[2.5rem] p-8 hover:border-black transition-all flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 animate-in fade-in slide-in-from-bottom-2">
                 
                 {/* CREATOR & AMOUNT */}
                 <div className="flex items-center gap-6 flex-1">
-                  <div className="h-16 w-16 bg-black rounded-2xl flex items-center justify-center text-[#a3dcf3] font-black text-xl">
+                  <div className="h-16 w-16 bg-black rounded-2xl flex items-center justify-center text-[#a3dcf3] font-black text-xl shadow-lg shadow-black/10">
                     {p.creatorName?.[0] || "C"}
                   </div>
                   <div>
                     <h3 className="text-xl font-black uppercase italic tracking-tighter">{p.creatorName}</h3>
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2 mt-1">
-                       <Clock className="h-3 w-3" /> Requested {new Date(p.createdAt?.seconds * 1000).toLocaleDateString()}
+                       <Clock className="h-3 w-3" /> Requested {p.createdAt?.seconds ? new Date(p.createdAt.seconds * 1000).toLocaleDateString() : "Recently"}
                     </p>
-                    <div className="mt-4 text-3xl font-black tracking-tighter">
+                    <div className="mt-4 text-3xl font-black tracking-tighter text-[#108a00]">
                       ₦{p.amount?.toLocaleString()}
                     </div>
                   </div>
                 </div>
 
-                {/* BANK DETAILS BOX */}
+                {/* BANK DETAILS BOX (Your Style) */}
                 <div className="bg-gray-50 rounded-[2rem] p-6 flex-1 w-full lg:w-auto border border-transparent group-hover:border-[#a3dcf3]/30 transition-all">
                    <p className="text-[9px] font-black uppercase text-gray-400 mb-3 tracking-widest">Settlement Destination</p>
                    <div className="space-y-1">
-                      <p className="text-sm font-black uppercase tracking-tight">{p.bankName}</p>
-                      <p className="text-lg font-black font-mono text-black">{p.accountNumber}</p>
-                      <p className="text-[10px] font-bold text-gray-400 uppercase">{p.accountName}</p>
+                      <p className="text-sm font-black uppercase tracking-tight">{p.bankName || p.bankDetails?.bankName}</p>
+                      <p className="text-lg font-black font-mono text-black">{p.accountNumber || p.bankDetails?.accountNumber}</p>
+                      <p className="text-[10px] font-bold text-gray-400 uppercase">{p.accountName || p.bankDetails?.accountName}</p>
                    </div>
                 </div>
 
@@ -171,23 +132,17 @@ export default function AdminPayouts() {
         )}
       </main>
 
-      {/* FOOTER STATS */}
-      <footer className="fixed bottom-0 w-full bg-white/80 backdrop-blur-md border-t border-gray-100 p-6">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex gap-8">
-            <div>
-              <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Active Requests</p>
-              <p className="font-black">{payouts.length}</p>
-            </div>
-            <div>
-              <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Total Liability</p>
-              <p className="font-black text-red-500">₦{payouts.reduce((acc, p) => acc + (p.amount || 0), 0).toLocaleString()}</p>
-            </div>
+      {/* FOOTER STATS (Floating within the main area) */}
+      <footer className="fixed bottom-24 lg:bottom-6 right-6 lg:right-10 left-6 lg:left-auto bg-black text-white p-6 rounded-3xl shadow-2xl flex items-center gap-10 border border-white/10 z-50">
+          <div>
+            <p className="text-[8px] font-black text-gray-500 uppercase tracking-widest">Queue</p>
+            <p className="font-black text-xl">{filteredPayouts.length}</p>
           </div>
-          <div className="text-[8px] font-black text-gray-300 uppercase tracking-widest italic">
-            UseMyCreator Treasury v1.0
+          <div className="w-px h-8 bg-white/10" />
+          <div>
+            <p className="text-[8px] font-black text-gray-500 uppercase tracking-widest">Liability</p>
+            <p className="font-black text-xl text-[#a3dcf3]">₦{filteredPayouts.reduce((acc, p) => acc + (p.amount || 0), 0).toLocaleString()}</p>
           </div>
-        </div>
       </footer>
     </div>
   );

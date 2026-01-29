@@ -53,7 +53,7 @@ export default function CreatorDashboard() {
         // 2. Fetch AVAILABLE & ASSIGNED campaigns
         const campaignQuery = query(
           collection(db, "campaigns"),
-          where("status", "in", ["open", "assigned", "in_review", "completed"]) 
+          where("status", "in", ["live", "open", "assigned", "in_review", "completed"]) 
         );
         
         const unsubscribeCampaigns = onSnapshot(campaignQuery, (snapshot) => {

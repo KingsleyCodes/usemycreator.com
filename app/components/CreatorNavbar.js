@@ -43,7 +43,7 @@ export default function CreatorNavbar({ creatorName, balance = 0, pendingEarning
 
   const navItems = [
     { label: "Studio", icon: Home, path: "/dashboard/creator" },
-    { label: "Explore", icon: Search, path: "/dashboard/creator/campaigns" },
+    { label: "Explore", icon: Search, path: "/dashboard/creator/explore" },
     { label: "My Jobs", icon: Briefcase, path: "/dashboard/creator/jobs" },
     { label: "Earnings", icon: Wallet, path: "/dashboard/creator/wallet" },
   ];

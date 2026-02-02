@@ -1,0 +1,80 @@
+"use client";
+
+import { useState } from 'react';
+import { ArrowRight, Sparkles, Play, Users, CheckCircle2 } from 'lucide-react';
+
+export default function Hero() {
+  return (
+    <section className="relative overflow-hidden bg-[#001E00] pt-32 pb-20 lg:pt-48 lg:pb-40">
+      
+      {/* --- ADVANCED BACKGROUND DESIGN --- */}
+      <div className="absolute inset-0 z-0">
+        {/* 1. The Grid Layer */}
+        <div className="absolute inset-0 opacity-[0.15] [mask-image:radial-gradient(ellipse_at_center,white,transparent_80%)]" 
+             style={{ backgroundImage: `linear-gradient(to right, #a3dcf3 1px, transparent 1px), linear-gradient(to bottom, #a3dcf3 1px, transparent 1px)`, backgroundSize: '60px 60px' }} />
+        
+        {/* 2. Primary Brand Glow (Top) */}
+        <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-primary/20 blur-[120px] rounded-full animate-pulse" />
+        
+        {/* 3. Secondary Accent Glow (Bottom Right) */}
+        <div className="absolute bottom-[-10%] right-[-5%] w-[400px] h-[400px] bg-primary/10 blur-[100px] rounded-full" />
+
+        {/* 4. Noise Texture Overlay */}
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
+      </div>
+      {/* --- END BACKGROUND DESIGN --- */}
+
+      <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12">
+        <div className="flex flex-col items-center text-center">
+          
+          {/* Animated Badge */}
+          <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-full mb-8 backdrop-blur-md animate-in fade-in slide-in-from-top-4 duration-1000">
+            <Sparkles className="w-3.5 h-3.5 text-primary" />
+            <span className="text-[10px] font-black text-primary uppercase tracking-[0.3em]">
+              The Micro-Creator Network
+            </span>
+          </div>
+
+          <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif font-medium leading-[1.1] tracking-tight text-white mb-8 max-w-5xl animate-in fade-in slide-in-from-bottom-4 duration-700">
+            Connecting businesses to <br />
+            <span className="text-primary italic font-normal">micro-creators</span> at scale.
+          </h1>
+
+          <p className="text-gray-400 text-lg md:text-xl max-w-2xl leading-relaxed mb-12 font-medium animate-in fade-in slide-in-from-bottom-6 duration-1000">
+            Stop overpaying for reach. Start investing in conversion with real creators who have real influence in their niche.
+          </p>
+
+          <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto mb-20 animate-in fade-in slide-in-from-bottom-8 duration-1000">
+            <button
+              onClick={() => window.location.href = '/login'}
+              className="w-full sm:w-auto bg-primary text-[#001E00] px-10 py-5 rounded-2xl font-black uppercase text-[11px] tracking-[0.2em] transition-all hover:bg-white hover:scale-[1.05] flex items-center justify-center gap-3 shadow-[0_0_40px_rgba(163,220,243,0.3)]"
+            >
+              Start Your Campaign
+              <ArrowRight className="w-4 h-4" />
+            </button>
+            
+            <button className="w-full sm:w-auto bg-white/5 backdrop-blur-md text-white border border-white/10 px-10 py-5 rounded-2xl font-black uppercase text-[11px] tracking-[0.2em] transition-all hover:bg-white/10 flex items-center justify-center gap-3">
+              <Play className="w-4 h-4 fill-current" />
+              See how it works
+            </button>
+          </div>
+
+          {/* Trust Section with dynamic border */}
+          <div className="relative w-full pt-16">
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+            <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16">
+              <div className="flex items-center gap-2 group">
+                <Users className="text-primary h-5 w-5 transition-transform group-hover:scale-110" />
+                <span className="text-white/80 font-bold text-sm tracking-tighter">5,000+ Vetted Creators</span>
+              </div>
+              <div className="flex items-center gap-2 group">
+                <CheckCircle2 className="text-emerald-400 h-5 w-5 transition-transform group-hover:scale-110" />
+                <span className="text-white/80 font-bold text-sm tracking-tighter">Escrow-Protected Payments</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}

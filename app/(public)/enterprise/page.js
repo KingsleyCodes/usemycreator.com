@@ -1,36 +1,105 @@
+"use client";
+
 import React from 'react';
+import { ShieldCheck, Zap, BarChart3, Users, ArrowRight, Briefcase, Globe } from 'lucide-react';
 
 const EnterprisePage = () => {
   return (
-    <div className="pt-24 pb-16 bg-gray-900 text-white min-h-screen px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center">
-          <h1 className="text-blue-400 font-semibold uppercase tracking-wider">Enterprise</h1>
-          <p className="mt-2 text-4xl font-extrabold sm:text-6xl">Scale your Content.</p>
-          <p className="mt-6 text-xl text-gray-400 max-w-3xl mx-auto">
-            High-volume content pipelines for brands that need 50+ videos or photos monthly to drive sales.
+    <div className="pt-32 pb-24 bg-[#001E00] text-white min-h-screen px-6 relative overflow-hidden">
+      
+      {/* --- BACKGROUND INFRASTRUCTURE --- */}
+      <div className="absolute inset-0 z-0">
+        {/* Subtle Brand Glow */}
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/10 blur-[150px] rounded-full" />
+        {/* The Grid Mask */}
+        <div className="absolute inset-0 opacity-[0.1]" 
+             style={{ backgroundImage: `linear-gradient(to right, #a3dcf3 1px, transparent 1px), linear-gradient(to bottom, #a3dcf3 1px, transparent 1px)`, backgroundSize: '80px 80px' }} />
+      </div>
+
+      <div className="relative z-10 max-w-7xl mx-auto">
+        {/* Header Section */}
+        <div className="text-center mb-24">
+          <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 px-4 py-2 rounded-full mb-6">
+            <Briefcase className="w-3.5 h-3.5 text-primary" />
+            <span className="text-[10px] font-black text-primary uppercase tracking-[0.3em]">
+              Institutional Grade
+            </span>
+          </div>
+          <h1 className="text-5xl md:text-8xl font-serif font-medium leading-tight mb-8">
+            Scale your <br />
+            <span className="text-primary italic font-normal">content pipeline.</span>
+          </h1>
+          <p className="text-gray-400 text-lg md:text-xl max-w-3xl mx-auto leading-relaxed font-medium">
+            High-volume creator operations for brands requiring 50+ monthly content assets. 
+            We provide the infrastructure; you provide the vision.
           </p>
         </div>
 
-        <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-12">
-          <div>
-            <h3 className="text-xl font-bold mb-3">Custom Vetting</h3>
-            <p className="text-gray-400">We hand-select creators that match your exact brand aesthetic and target market.</p>
-          </div>
-          <div>
-            <h3 className="text-xl font-bold mb-3">Rights Management</h3>
-            <p className="text-gray-400">Own all content rights immediately for use in paid ads or social media campaigns.</p>
-          </div>
-          <div>
-            <h3 className="text-xl font-bold mb-3">Dedicated Support</h3>
-            <p className="text-gray-400">A personal account manager to handle your briefs and creator communications.</p>
-          </div>
+        {/* Feature Matrix */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-32">
+          {[
+            { 
+              title: "Custom Vetting", 
+              desc: "We hand-select creators that match your exact brand aesthetic and target market.",
+              icon: <Users className="h-6 w-6" />
+            },
+            { 
+              title: "Rights Management", 
+              desc: "Immediate ownership of all content rights for paid ads and global campaigns.",
+              icon: <ShieldCheck className="h-6 w-6" />
+            },
+            { 
+              title: "Dedicated Support", 
+              desc: "A personal account manager to handle briefs and creator communications.",
+              icon: <Globe className="h-6 w-6" />
+            }
+          ].map((item, i) => (
+            <div key={i} className="p-10 rounded-[2.5rem] bg-white/5 border border-white/10 hover:border-primary/50 transition-all group">
+              <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-8 text-primary group-hover:bg-primary group-hover:text-black transition-all">
+                {item.icon}
+              </div>
+              <h3 className="text-xl font-bold mb-4 tracking-tight">{item.title}</h3>
+              <p className="text-gray-400 text-sm leading-relaxed">{item.desc}</p>
+            </div>
+          ))}
         </div>
 
-        <div className="mt-20 text-center">
-          <button className="bg-blue-600 hover:bg-blue-700 text-white px-12 py-5 rounded-xl font-bold text-lg transition-all">
-            Talk to Enterprise Sales
-          </button>
+        {/* The "Command Center" Preview */}
+        <div className="relative bg-white/5 rounded-[3rem] border border-white/10 p-8 md:p-16 overflow-hidden">
+          <div className="absolute top-0 right-0 p-8">
+             <div className="flex gap-2">
+                <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                <div className="h-2 w-2 rounded-full bg-white/20" />
+             </div>
+          </div>
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <div>
+              <h2 className="text-3xl md:text-5xl font-serif mb-6 leading-tight">
+                Your content <br />on <span className="text-primary italic">autopilot.</span>
+              </h2>
+              <p className="text-gray-400 mb-8 leading-relaxed">
+                Unlock our API and managed services to integrate creator-led content directly into your marketing stack.
+              </p>
+              <ul className="space-y-4 mb-10">
+                {['Direct API Access', 'Whitelabel Options', 'Volume Rebates'].map((check) => (
+                  <li key={check} className="flex items-center gap-3 font-bold text-xs uppercase tracking-widest text-primary">
+                    <Zap className="h-4 w-4" /> {check}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            
+            {/* CTA Box */}
+            <div className="bg-primary p-12 rounded-[2rem] text-[#001E00] flex flex-col items-center text-center">
+              <BarChart3 className="h-12 w-12 mb-6" />
+              <h3 className="text-2xl font-black mb-4">Ready for Deployment?</h3>
+              <p className="font-medium mb-8 opacity-80">Book a discovery call with our institutional sales team.</p>
+              <button className="w-full bg-[#001E00] text-white px-8 py-5 rounded-2xl font-black uppercase text-[11px] tracking-[0.2em] transition-all hover:bg-white hover:text-black flex items-center justify-center gap-3">
+                Talk to Enterprise Sales
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -28,7 +28,7 @@ export const metadata = {
     telephone: false,
   },
   openGraph: {
-    title: "UseMyCreator - Work with Confidence",
+    title: "UseMyCreator -Invest In Influence ",
     description: "Lock funds in escrow and only pay when the content is live. Protect your brand and your money with Nigeria's leading creator escrow platform.",
     url: "https://usemycreator.com",
     siteName: "UseMyCreator",

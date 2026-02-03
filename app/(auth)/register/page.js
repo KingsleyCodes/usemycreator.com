@@ -4,7 +4,8 @@ import { useState } from "react";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation"; // Added useSearchParams
+import * as fbq from "@/lib/fpixel"; // Import Pixel utility
 import { Sparkles, Mail, Lock, User, ArrowRight, ShieldCheck } from "lucide-react";
 
 export default function RegisterPage() {
@@ -13,26 +14,53 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  
+  // Initialize search params to capture the ?plan= note from the URL
+  const searchParams = useSearchParams();
+  const selectedPlan = searchParams.get("plan"); // e.g., "pro" or "free"
 
   const handleRegister = async (e) => {
     e.preventDefault();
     setLoading(true);
+
+    // Track the registration attempt as a Lead
+    fbq.event('Lead', {
+      content_name: 'Registration Form Submission',
+      content_category: 'User Onboarding',
+      value: selectedPlan === 'pro' ? 50000 : 0,
+      currency: 'NGN',
+      predicted_plan: selectedPlan || 'undecided'
+    });
     
     try {
       // 1. Create the Auth Account
       const res = await createUserWithEmailAndPassword(auth, email, password);
 
-      // 2. Initialize the base user document in Firestore
-      // Storing the name here ensures we have their identity immediately
+      // 2. Determine Role and Plan
+      // If they came from the pricing page with a plan, they are definitely a business.
+      const initialRole = selectedPlan ? "business" : null;
+      const initialPlan = selectedPlan || "free";
+
+      // 3. Initialize the base user document in Firestore
       await setDoc(doc(db, "users", res.user.uid), {
         uid: res.user.uid,
-        name: fullName, // Returning the Full Name field as requested
+        name: fullName, 
         email: email,
-        role: null, // Forces the choice at /onboarding
-        createdAt: serverTimestamp(), // Using serverTimestamp for consistency
+        role: initialRole, // Automatically set if plan exists
+        plan: initialPlan, // Saves the "pro" or "free" label
+        createdAt: serverTimestamp(), 
       });
 
-      // 3. Move them to the choice screen
+      // Track the final success of the registration
+      fbq.event('CompleteRegistration', {
+        content_name: 'Account Initialized',
+        status: 'Success',
+        plan: initialPlan
+      });
+
+      // 4. Move them to the next step
+      // If we already know they are a business, we could skip the choice screen, 
+      // but keeping your /onboarding flow as requested for profile setup.
       router.push("/onboarding");
       
     } catch (error) {
@@ -60,7 +88,13 @@ export default function RegisterPage() {
 
       <div className="max-w-md w-full bg-white p-8 sm:p-10 rounded-[2.5rem] shadow-2xl border border-gray-100">
         <h1 className="text-3xl font-black text-gray-900 mb-2 tracking-tighter">Initialize Account</h1>
-        <p className="text-sm text-gray-500 mb-8 font-medium">Join the institutional creator infrastructure.</p>
+        
+        {/* Added a dynamic message if a plan is selected */}
+        <p className="text-sm text-gray-500 mb-8 font-medium">
+          {selectedPlan 
+            ? `You are registering for the ${selectedPlan.toUpperCase()} infrastructure.` 
+            : "Join the institutional creator infrastructure."}
+        </p>
         
         <form onSubmit={handleRegister} className="space-y-5">
           {/* FULL NAME FIELD */}
@@ -125,7 +159,10 @@ export default function RegisterPage() {
           <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">
             Already have an account?{" "}
             <button 
-              onClick={() => router.push("/login")}
+              onClick={() => {
+                fbq.event('Contact', { content_name: 'Register Page Switch to Login' });
+                router.push("/login");
+              }}
               className="text-black hover:text-[#a3dcf3] transition-colors font-black"
             >
               Login

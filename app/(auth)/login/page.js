@@ -5,6 +5,7 @@ import { auth, db } from "@/lib/firebase";
 import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
+import * as fbq from "@/lib/fpixel"; // Import Pixel utility
 import { Sparkles, ShieldCheck, Mail, Lock, ArrowRight } from "lucide-react";
 
 export default function LoginPage() {
@@ -16,6 +17,12 @@ export default function LoginPage() {
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
+
+    // Track login attempt
+    fbq.event('Contact', { 
+      content_name: 'Login Form Submission',
+      method: 'Email' 
+    });
 
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -38,6 +45,9 @@ export default function LoginPage() {
           setLoading(false);
           return;
         }
+        
+        // Track successful login/return
+        fbq.event('CompleteRegistration', { content_name: 'Creator Login Success' });
         router.push("/dashboard/creator");
         return;
       }
@@ -52,6 +62,9 @@ export default function LoginPage() {
           setLoading(false);
           return;
         }
+
+        // Track successful login/return
+        fbq.event('CompleteRegistration', { content_name: 'Business Login Success' });
         router.push("/dashboard/business");
         return;
       }
@@ -60,6 +73,7 @@ export default function LoginPage() {
       const userDoc = await getDoc(doc(db, "users", user.uid));
       if (userDoc.exists()) {
         const data = userDoc.data();
+        fbq.event('CompleteRegistration', { content_name: 'User Login Success', role: data.role });
         router.push(data.role === "business" ? "/dashboard/business" : "/dashboard/creator");
       } else {
         alert("User data not found. Please sign up.");
@@ -142,7 +156,10 @@ export default function LoginPage() {
           <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">
             New to the infrastructure?{" "}
             <button 
-              onClick={() => router.push("/register")}
+              onClick={() => {
+                fbq.event('Contact', { content_name: 'Login Page Switch to Register' });
+                router.push("/register");
+              }}
               className="text-black hover:text-[#a3dcf3] transition-colors font-black"
             >
               Sign Up

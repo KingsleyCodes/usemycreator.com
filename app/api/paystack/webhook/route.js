@@ -128,6 +128,33 @@ export async function POST(req) {
 
         return NextResponse.json({ message: "Escrow Secured and Notified" }, { status: 200 });
       }
+
+      // --- CASE C: PRO STUDIO UPGRADE ---
+      if (type === "upgrade_pro") {
+        const businessRef = dbAdmin.collection("businesses").doc(businessId);
+        const transactionRef = dbAdmin.collection("transactions").doc(reference);
+        const batch = dbAdmin.batch();
+
+        batch.update(businessRef, {
+          plan: "pro",
+          upgradedAt: admin.firestore.FieldValue.serverTimestamp(),
+          updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+
+        batch.set(transactionRef, {
+          type: "pro_upgrade",
+          amount: amount / 100,
+          businessId: businessId,
+          reference: reference,
+          status: "success",
+          customerEmail: customer.email,
+          createdAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+
+        await batch.commit();
+        console.log(`👑 SUCCESS: Business ${businessId} upgraded to PRO.`);
+        return NextResponse.json({ message: "Account Upgraded to Pro" }, { status: 200 });
+      }
     }
 
     return NextResponse.json({ message: "Event ignored" }, { status: 200 });

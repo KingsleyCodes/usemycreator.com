@@ -2,11 +2,13 @@ import { NextResponse } from "next/server";
 
 export async function POST(req) {
   try {
-    const { email, amount, campaignId, businessId } = await req.json();
+    const { email, amount, campaignId, businessId, metadata: incomingMetadata } = await req.json();
 
     // Amount must be in Kobo (Naira * 100)
     const paystackAmount = amount * 100;
 
+    // We spread the incoming metadata to support both Campaign payments 
+    // and the new Pro Upgrade type.
     const response = await fetch("https://api.paystack.co/transaction/initialize", {
       method: "POST",
       headers: {
@@ -18,10 +20,20 @@ export async function POST(req) {
         amount: paystackAmount,
         callback_url: `${process.env.NEXT_PUBLIC_URL}/dashboard/business/pay/success`,
         metadata: {
+          ...incomingMetadata, // This will now catch { type: "upgrade_pro" }
           campaignId,
           businessId,
           custom_fields: [
-            { display_name: "Campaign ID", variable_name: "campaign_id", value: campaignId }
+            { 
+              display_name: "Campaign ID", 
+              variable_name: "campaign_id", 
+              value: campaignId || "Upgrade" 
+            },
+            { 
+              display_name: "Business ID", 
+              variable_name: "business_id", 
+              value: businessId 
+            }
           ]
         },
       }),
@@ -30,6 +42,7 @@ export async function POST(req) {
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
+    console.error("Paystack Init Error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

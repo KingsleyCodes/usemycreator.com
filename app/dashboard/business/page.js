@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { 
   collection, query, where, getDocs, 
@@ -13,6 +13,8 @@ import { db, auth } from "@/lib/firebase";
 import GlobalNotification from "@/app/components/GlobalNotification";
 import BusinessNavbar from "@/app/components/BusinessNavbar";
 import ReviewSubmissionModal from "@/app/components/ReviewSubmissionModal";
+import UpgradeTrigger from "@/app/components/dashboard/UpgradeTrigger"; 
+import UpgradeSuccess from "@/app/components/dashboard/UpgradeSuccess"; // New Success Component
 
 import { 
   Plus, 
@@ -45,6 +47,10 @@ export default function BusinessDashboard() {
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [selectedCampaignForReview, setSelectedCampaignForReview] = useState(null);
   const [topUpAmount, setTopUpAmount] = useState("");
+
+  // PLAN CHANGE LISTENER STATES
+  const [showSuccessScreen, setShowSuccessScreen] = useState(false);
+  const lastKnownPlan = useRef(null); // Using a Ref to track plan without re-renders until needed
 
   const fundFromWallet = async (campaign) => {
     const currentBalance = businessProfile?.walletBalance || 0;
@@ -168,14 +174,29 @@ export default function BusinessDashboard() {
       if (!user) return router.push("/login");
       try {
         const unsubscribeBiz = onSnapshot(doc(db, "businesses", user.uid), (snap) => {
-          if (snap.exists()) setBusinessProfile(snap.data());
-          else setLoading(false);
+          if (snap.exists()) {
+            const data = snap.data();
+            
+            // --- PLAN CHANGE LISTENER LOGIC ---
+            // If we have a stored plan from earlier in THIS session, and it changes to 'pro'
+            if (lastKnownPlan.current === 'marketplace' && data.plan === 'pro') {
+              setShowSuccessScreen(true);
+            }
+            
+            // Update the tracker ref so next time we know what it was
+            lastKnownPlan.current = data.plan;
+            setBusinessProfile(data);
+          } else {
+            setLoading(false);
+          }
         });
+
         const q = query(collection(db, "campaigns"), where("businessId", "==", user.uid));
         const unsubscribeCampaigns = onSnapshot(q, (snap) => {
             const campaignList = snap.docs.map(d => ({ id: d.id, ...d.data() }));
             setCampaigns(campaignList);
         });
+
         const appQuery = query(collection(db, "applications"), where("businessId", "==", user.uid));
         const unsubscribeApps = onSnapshot(appQuery, async (appSnap) => {
             const appsMap = {};
@@ -188,10 +209,12 @@ export default function BusinessDashboard() {
             }
             setApplications(appsMap);
         });
+
         const chatQuery = query(collection(db, "chats"), where("participants", "array-contains", user.uid), orderBy("updatedAt", "desc"));
         const unsubscribeChats = onSnapshot(chatQuery, (snapshot) => {
           setActiveChats(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
         });
+
         setLoading(false);
         return () => { unsubscribeBiz(); unsubscribeChats(); unsubscribeCampaigns(); unsubscribeApps(); };
       } catch (err) {
@@ -229,9 +252,15 @@ export default function BusinessDashboard() {
   if (!businessProfile) return null;
 
   return (
-    <div className="min-h-screen bg-[#F9FAFB] text-[#001E00] antialiased">
+    <div className="min-h-screen bg-[#F9FAFB] text-[#001E00] antialiased relative">
       <GlobalNotification targetType="businesses" />
-      <BusinessNavbar companyName={businessProfile.companyName} />
+      <BusinessNavbar 
+        companyName={businessProfile.companyName} 
+        balance={businessProfile.walletBalance} 
+      />
+
+      {/* FIXED UPGRADE TRIGGER & STATUS BADGE */}
+      <UpgradeTrigger />
 
       {/* --- DASHBOARD HEADER --- */}
       <header className="bg-white border-b border-gray-200">
@@ -478,6 +507,12 @@ export default function BusinessDashboard() {
             campaign={selectedCampaignForReview}
           />
       )}
+
+      {/* SUCCESS CELEBRATION OVERLAY */}
+      <UpgradeSuccess 
+        isOpen={showSuccessScreen} 
+        onClose={() => setShowSuccessScreen(false)} 
+      />
     </div>
   );
 }

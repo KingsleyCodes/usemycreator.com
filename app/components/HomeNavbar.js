@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import * as fbq from "@/lib/fpixel"; // Import our Pixel utility
 import { 
   Menu, 
   X, 
@@ -30,6 +31,17 @@ export default function HomeNavbar() {
     { name: "Enterprise", href: "/enterprise" },
     { name: "Pricing", href: "/pricing" },
   ];
+
+  // Tracking Helpers
+  const trackLoginClick = () => {
+    fbq.event('Contact', { content_name: 'Navbar Login Click', location: 'HomeNavbar' });
+    router.push("/login");
+  };
+
+  const trackRegisterClick = () => {
+    fbq.event('Contact', { content_name: 'Navbar Register Click', location: 'HomeNavbar' });
+    router.push("/register");
+  };
 
   return (
     <>
@@ -69,14 +81,14 @@ export default function HomeNavbar() {
             {/* Right: Authentication Actions */}
             <div className="flex items-center gap-3 sm:gap-6">
               <button 
-                onClick={() => router.push("/login")}
+                onClick={trackLoginClick}
                 className="hidden sm:block text-xs font-bold uppercase tracking-widest text-gray-500 hover:text-black transition-colors"
               >
                 Log In
               </button>
 
               <button 
-                onClick={() => router.push("/register")} // ✅ CHANGED TO REGISTER
+                onClick={trackRegisterClick}
                 className="bg-black text-white px-5 py-2.5 sm:px-7 sm:py-3 rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-widest hover:bg-gray-800 transition-all flex items-center gap-2 shadow-lg active:scale-95"
               >
                 Get Started <ArrowUpRight className="h-3.5 w-3.5 text-[#a3dcf3]" />
@@ -137,13 +149,19 @@ export default function HomeNavbar() {
 
             <div className="p-6 border-t border-gray-100 space-y-3">
               <button 
-                onClick={() => router.push("/register")} // ✅ CHANGED TO REGISTER
+                onClick={() => {
+                  trackRegisterClick();
+                  setMobileMenuOpen(false);
+                }}
                 className="w-full py-4 bg-black text-white rounded-xl font-bold text-sm uppercase tracking-widest shadow-xl"
               >
                 Join Now
               </button>
               <button 
-                onClick={() => router.push("/login")}
+                onClick={() => {
+                  trackLoginClick();
+                  setMobileMenuOpen(false);
+                }}
                 className="w-full py-4 bg-white text-gray-500 border border-gray-200 rounded-xl font-bold text-sm uppercase tracking-widest"
               >
                 Log In

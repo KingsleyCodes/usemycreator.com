@@ -30,6 +30,7 @@ export default function HomeNavbar() {
     { name: "Creator Network", href: "/creator-network" },
     { name: "Enterprise", href: "/enterprise" },
     { name: "Pricing", href: "/pricing" },
+    { name: "Blog", href: "/blog" }, // ✅ Added Blog to the navigation
   ];
 
   // Tracking Helpers

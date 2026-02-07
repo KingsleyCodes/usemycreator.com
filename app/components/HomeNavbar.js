@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import * as fbq from "@/lib/fpixel"; // Import our Pixel utility
+import Link from "next/link"; // Added for SEO crawling
+import * as fbq from "@/lib/fpixel";
 import { 
   Menu, 
   X, 
@@ -30,10 +31,10 @@ export default function HomeNavbar() {
     { name: "Creator Network", href: "/creator-network" },
     { name: "Enterprise", href: "/enterprise" },
     { name: "Pricing", href: "/pricing" },
-    { name: "Blog", href: "/blog" }, // ✅ Added Blog to the navigation
+    { name: "Blog", href: "/blog" },
   ];
 
-  // Tracking Helpers
+  // Tracking Helpers - Kept exactly as provided
   const trackLoginClick = () => {
     fbq.event('Contact', { content_name: 'Navbar Login Click', location: 'HomeNavbar' });
     router.push("/login");
@@ -53,29 +54,29 @@ export default function HomeNavbar() {
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 sm:h-20">
             
-            {/* Left: Brand Identity */}
-            <div 
+            {/* Left: Brand Identity - Updated to USE MY CREATOR */}
+            <Link 
+              href="/"
               className="flex items-center gap-3 cursor-pointer group"
-              onClick={() => router.push("/")}
             >
               <div className="h-9 w-9 bg-black rounded flex items-center justify-center shadow-sm transition-transform group-hover:rotate-6">
-                <span className="text-[#a3dcf3] font-black text-lg">M</span>
+                <span className="text-[#a3dcf3] font-black text-lg">U</span>
               </div>
               <span className="text-lg font-bold tracking-tight text-gray-900 uppercase hidden xs:block">
-                MYCREATOR<span className="text-gray-400">.STUDIO</span>
+                USE MY <span className="text-gray-400">CREATOR</span>
               </span>
-            </div>
+            </Link>
 
-            {/* Center: Public Links */}
+            {/* Center: Public Links - Converted to Links for Google Crawling */}
             <div className="hidden lg:flex items-center gap-2">
               {navLinks.map((link) => (
-                <button
+                <Link
                   key={link.name}
-                  onClick={() => router.push(link.href)}
+                  href={link.href}
                   className="px-4 py-2 rounded-md text-sm font-semibold text-gray-500 hover:text-black hover:bg-gray-50 transition-all"
                 >
                   {link.name}
-                </button>
+                </Link>
               ))}
             </div>
 
@@ -120,17 +121,15 @@ export default function HomeNavbar() {
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
               <div className="space-y-1">
                 {navLinks.map((link) => (
-                  <button 
+                  <Link 
                     key={link.name}
-                    onClick={() => {
-                      router.push(link.href);
-                      setMobileMenuOpen(false);
-                    }}
+                    href={link.href}
+                    onClick={() => setMobileMenuOpen(false)}
                     className="w-full flex items-center justify-between p-4 rounded-xl hover:bg-gray-50 text-gray-900 transition-all border border-transparent font-bold text-lg"
                   >
                     {link.name}
                     <ChevronDown className="h-4 w-4 -rotate-90 text-gray-300" />
-                  </button>
+                  </Link>
                 ))}
               </div>
 
@@ -143,7 +142,7 @@ export default function HomeNavbar() {
                 <div className="p-5 bg-gray-50 rounded-2xl border border-gray-100">
                   <Zap className="h-5 w-5 text-[#a3dcf3] mb-2 fill-[#a3dcf3]" />
                   <p className="text-xs font-bold text-gray-900 uppercase mb-1">Verified Talent</p>
-                  <p className="text-[10px] text-gray-500 font-medium">Top 3% of global content creators.</p>
+                  <p className="text-[10px] text-gray-500 font-medium">Top 3% of Nigerian content creators.</p>
                 </div>
               </div>
             </div>

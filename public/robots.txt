@@ -1,10 +1,20 @@
 User-agent: *
+# Core Permissions
 Allow: /
 Allow: /profile/
-Disallow: /dashboard/
-Disallow: /dashboard/admin/
-Disallow: /dashboard/business/
-Disallow: /dashboard/creator/
-Disallow: /api/
+Allow: /blog/
+Allow: /pricing/
 
+# Security & Privacy - Blocking the private infrastructure
+Disallow: /dashboard/
+Disallow: /admin/
+Disallow: /login/
+Disallow: /api/
+Disallow: /_next/
+Disallow: /static/
+
+# Crawl Efficiency
+Crawl-delay: 10
+
+# The Map
 Sitemap: https://usemycreator.com/sitemap.xml

@@ -2,21 +2,34 @@
 
 import { useState } from "react";
 import { auth, db } from "@/lib/firebase";
-import { signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { signInWithEmailAndPassword, signOut, sendEmailVerification } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import * as fbq from "@/lib/fpixel"; // Import Pixel utility
-import { Sparkles, ShieldCheck, Mail, Lock, ArrowRight } from "lucide-react";
+import { Sparkles, ShieldCheck, Mail, Lock, ArrowRight, AlertCircle } from "lucide-react";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [verificationError, setVerificationError] = useState(false);
   const router = useRouter();
+
+  const handleResendVerification = async () => {
+    if (auth.currentUser) {
+      try {
+        await sendEmailVerification(auth.currentUser);
+        alert("A new verification link has been sent to your email.");
+      } catch (error) {
+        alert("Wait a moment before requesting another link.");
+      }
+    }
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setVerificationError(false);
 
     // Track login attempt
     fbq.event('Contact', { 
@@ -27,6 +40,17 @@ export default function LoginPage() {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
+
+      // ==========================================================
+      // PHASE 2: EMAIL VERIFICATION GATE
+      // ==========================================================
+      if (!user.emailVerified) {
+        setVerificationError(true);
+        setLoading(false);
+        // We do not signOut yet so the user can click 'Resend' 
+        // but we stop the redirect logic here.
+        return;
+      }
 
       // 1. CHECK FOR ADMIN (Your Owner Account)
       const adminDoc = await getDoc(doc(db, "admins", user.uid));
@@ -108,9 +132,27 @@ export default function LoginPage() {
       </div>
 
       <div className="max-w-md w-full bg-white p-8 sm:p-10 rounded-[2.5rem] shadow-2xl border border-gray-100">
-        <h1 className="text-3xl font-black text-gray-900 mb-2 tracking-tighter">Welcome Back</h1>
+        <h1 className="text-3xl font-black text-gray-900 mb-2 tracking-tighter uppercase italic">Authorize <span className="text-[#a3dcf3]">Login.</span></h1>
         <p className="text-sm text-gray-500 mb-8 font-medium">Access your institutional management portal.</p>
         
+        {/* EMAIL VERIFICATION ALERT BOX */}
+        {verificationError && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-2xl flex flex-col gap-2 animate-in slide-in-from-top-2 duration-300">
+            <div className="flex items-center gap-2 text-red-600 font-black text-[10px] uppercase tracking-widest">
+              <AlertCircle className="h-4 w-4" /> Account Not Verified
+            </div>
+            <p className="text-[11px] text-red-500 font-bold leading-relaxed">
+              Your security clearance is pending. Check your inbox for the verification link.
+            </p>
+            <button 
+              onClick={handleResendVerification}
+              className="text-left text-[10px] font-black uppercase tracking-tighter text-red-700 underline hover:text-red-900 transition-colors"
+            >
+              Resend Verification Link?
+            </button>
+          </div>
+        )}
+
         <form onSubmit={handleLogin} className="space-y-5">
           <div>
             <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-2 mb-2 block">Identity (Email)</label>
@@ -156,7 +198,8 @@ export default function LoginPage() {
           <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">
             New to the infrastructure?{" "}
             <button 
-              onClick={() => {
+              onClick={(e) => {
+                e.preventDefault();
                 fbq.event('Contact', { content_name: 'Login Page Switch to Register' });
                 router.push("/register");
               }}

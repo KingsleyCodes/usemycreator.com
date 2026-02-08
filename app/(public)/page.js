@@ -9,20 +9,22 @@ import FAQ from '../components/home/FAQ';
 
 export default function HomePage() {
   return (
+    // Ensure the outer container is the dark brand color
     <div className="min-h-screen bg-[#001E00] antialiased">
       <HomeNavbar />
       
-      <main>
+      {/* Remove any default browser padding/margin on main */}
+      <main className="relative">
         <Hero />
         
-        {/* White Section Start */}
-        <div className="relative z-20 -mt-10">
+        {/* The -mt-10 creates the "overlap" effect for the white sections */}
+        <div className="relative z-20 -mt-10 bg-white rounded-t-[3rem] lg:rounded-t-[5rem]">
           <CreatorGallery />
           <Process />
           <Features />
           <FAQ />
           
-          {/* Growth Footer CTA */}
+          {/* Growth Footer CTA - Transitioning back to dark */}
           <section className="bg-[#001E00] py-32 px-6 text-center rounded-t-[3rem] lg:rounded-t-[5rem]">
             <h2 className="text-4xl md:text-6xl font-serif text-white mb-8">
               Ready to <span className="italic text-[#a3dcf3]">start growing?</span>

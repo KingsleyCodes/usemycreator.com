@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { auth, db } from "@/lib/firebase";
 import { collection, addDoc, serverTimestamp, doc, getDoc } from "firebase/firestore";
 import { signOut, onAuthStateChanged } from "firebase/auth";
+import { NICHES } from "@/lib/pricingConfig";
+import MarketSentiment from "@/app/components/dashboard/MarketSentiment";
 import { 
   X, 
   ChevronRight, 
@@ -12,7 +14,8 @@ import {
   Loader2, 
   LogOut,
   ChevronLeft,
-  Twitter
+  Twitter,
+  Target
 } from "lucide-react";
 
 export default function CreateCampaign() {
@@ -25,6 +28,8 @@ export default function CreateCampaign() {
     title: "",
     description: "",
     platform: "Instagram",
+    niche: "lifestyle", // Added niche to state
+    targetViews: 5000,   // Added default target views for sentiment calculation
     budget: "",
     milestones: "upfront", 
     status: "inactive",
@@ -99,6 +104,8 @@ export default function CreateCampaign() {
         title: formData.title.trim(),
         description: formData.description.trim(),
         platform: formData.platform,
+        niche: formData.niche,
+        targetViews: formData.targetViews,
         budget: Number(formData.budget),
         milestones: formData.milestones,
         status: "inactive", 
@@ -185,20 +192,30 @@ export default function CreateCampaign() {
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-widest">Platform</label>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                      {["Instagram", "TikTok", "YouTube", "Twitter"].map((p) => (
-                        <button
-                          key={p}
-                          type="button"
-                          onClick={() => setFormData({...formData, platform: p})}
-                          className={`py-2.5 rounded-lg border text-[10px] font-bold transition-all flex items-center justify-center gap-1.5 ${formData.platform === p ? 'border-black bg-black text-white' : 'border-gray-200 bg-white text-gray-500'}`}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-widest">Platform</label>
+                        <select 
+                            value={formData.platform}
+                            onChange={(e) => setFormData({...formData, platform: e.target.value})}
+                            className="w-full border border-gray-200 bg-white p-3 rounded-xl font-bold text-xs"
                         >
-                          {p === "Twitter" && <Twitter className="h-3 w-3" />}
-                          {p}
-                        </button>
-                      ))}
+                            {["Instagram", "TikTok", "YouTube", "Twitter"].map(p => (
+                                <option key={p} value={p}>{p}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-widest">Campaign Niche</label>
+                        <select 
+                            value={formData.niche}
+                            onChange={(e) => setFormData({...formData, niche: e.target.value})}
+                            className="w-full border border-gray-200 bg-white p-3 rounded-xl font-bold text-xs"
+                        >
+                            {NICHES.map(n => (
+                                <option key={n.id} value={n.id}>{n.icon} {n.label}</option>
+                            ))}
+                        </select>
                     </div>
                   </div>
 
@@ -235,7 +252,12 @@ export default function CreateCampaign() {
 
                 <div className="space-y-6">
                   <div>
-                    <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-widest">Budget (₦)</label>
+                    <div className="flex justify-between items-end mb-1.5">
+                        <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest">Budget (₦)</label>
+                        <div className="flex items-center gap-1.5 text-[10px] font-black text-[#a3dcf3] uppercase">
+                            <Target className="h-3 w-3" /> Target: {formData.targetViews.toLocaleString()} Views
+                        </div>
+                    </div>
                     <div className="relative">
                       <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-gray-400 text-lg">₦</span>
                       <input
@@ -247,6 +269,13 @@ export default function CreateCampaign() {
                         onChange={(e) => setFormData({...formData, budget: e.target.value})}
                       />
                     </div>
+
+                    {/* MARKET SENTIMENT INTEGRATION */}
+                    <MarketSentiment 
+                        offerAmount={Number(formData.budget)}
+                        targetViews={formData.targetViews}
+                        niche={formData.niche}
+                    />
                   </div>
 
                   <div>

@@ -5,16 +5,20 @@ import { ArrowRight, Sparkles, Play, Users, CheckCircle2 } from 'lucide-react';
 
 export default function Hero() {
   return (
-    <section className="relative overflow-hidden bg-[#001E00] pt-32 pb-20 lg:pt-48 lg:pb-40">
+    /* Added -mt-1 to pull the hero up slightly and ensure it sits flush under the navbar */
+    <section className="relative overflow-hidden bg-[#001E00] pt-24 pb-20 lg:pt-36 lg:pb-40 -mt-1">
       
       {/* --- ADVANCED BACKGROUND DESIGN --- */}
       <div className="absolute inset-0 z-0">
         {/* 1. The Grid Layer */}
         <div className="absolute inset-0 opacity-[0.15] [mask-image:radial-gradient(ellipse_at_center,white,transparent_80%)]" 
-             style={{ backgroundImage: `linear-gradient(to right, #a3dcf3 1px, transparent 1px), linear-gradient(to bottom, #a3dcf3 1px, transparent 1px)`, backgroundSize: '60px 60px' }} />
+             style={{ 
+               backgroundImage: `linear-gradient(to right, #a3dcf3 1px, transparent 1px), linear-gradient(to bottom, #a3dcf3 1px, transparent 1px)`, 
+               backgroundSize: '60px 60px' 
+             }} />
         
-        {/* 2. Primary Brand Glow (Top) */}
-        <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-primary/20 blur-[120px] rounded-full animate-pulse" />
+        {/* 2. Primary Brand Glow (Top) - Moved up to ensure color is behind the navbar */}
+        <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-primary/20 blur-[120px] rounded-full animate-pulse" />
         
         {/* 3. Secondary Accent Glow (Bottom Right) */}
         <div className="absolute bottom-[-10%] right-[-5%] w-[400px] h-[400px] bg-primary/10 blur-[100px] rounded-full" />
@@ -59,7 +63,7 @@ export default function Hero() {
             </button>
           </div>
 
-          {/* Trust Section with dynamic border */}
+          {/* Trust Section */}
           <div className="relative w-full pt-16">
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
             <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16">

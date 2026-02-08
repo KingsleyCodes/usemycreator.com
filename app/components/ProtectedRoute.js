@@ -19,6 +19,27 @@ export default function ProtectedRoute({ children, allowedRole }) {
         return;
       }
 
+      // ==========================================================
+      // NEW SECURITY LAYER: EMAIL VERIFICATION
+      // ==========================================================
+      // We force a reload to get the freshest status from Firebase servers
+      try {
+        await user.reload(); 
+        if (!user.emailVerified) {
+          if (isMounted) {
+            // We sign them out so they can't bypass via state manipulation
+            await signOut(auth);
+            router.push("/login?error=unverified");
+          }
+          return;
+        }
+      } catch (reloadError) {
+        console.error("User reload error:", reloadError);
+        if (isMounted) router.push("/login");
+        return;
+      }
+      // ==========================================================
+
       try {
         // 1. Determine which collection to check based on allowedRole
         // This makes the component work for /dashboard/creator, /dashboard/business, and /dashboard/admin

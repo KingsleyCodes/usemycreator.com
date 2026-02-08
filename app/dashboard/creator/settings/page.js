@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { auth, db } from "@/lib/firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
-import { Loader2, CheckCircle, AlertCircle, Building2, Search } from "lucide-react";
+import { Loader2, CheckCircle, AlertCircle, Building2, Search, X } from "lucide-react";
 
 export default function BankSettings() {
   const router = useRouter();
@@ -13,8 +13,10 @@ export default function BankSettings() {
   const [saving, setSaving] = useState(false);
   const [verifying, setVerifying] = useState(false);
   
-  // Lists
+  // Lists & Search
   const [banks, setBanks] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
   
   // Bank States
   const [bankData, setBankData] = useState({
@@ -25,12 +27,15 @@ export default function BankSettings() {
   });
 
   useEffect(() => {
-    // 1. Fetch Nigerian Bank List for the dropdown
+    // 1. Fetch Nigerian Bank List via your internal API with type=list
     const fetchBanks = async () => {
       try {
-        const res = await fetch("https://api.paystack.co/bank");
+        const res = await fetch("/api/verify-bank?type=list");
         const data = await res.json();
-        if (data.status) {
+        // Since the API returns data.data (array), we handle it here
+        if (Array.isArray(data)) {
+          setBanks(data);
+        } else if (data.status && data.data) {
           setBanks(data.data);
         }
       } catch (err) {
@@ -46,10 +51,12 @@ export default function BankSettings() {
         return;
       }
 
-      // Fetch existing bank details if they exist
       const userDoc = await getDoc(doc(db, "creators", user.uid));
       if (userDoc.exists() && userDoc.data().bankDetails) {
-        setBankData(userDoc.data().bankDetails);
+        const existingDetails = userDoc.data().bankDetails;
+        setBankData(existingDetails);
+        // If we have an existing bank name, set the search term so it's visible
+        setSearchTerm(existingDetails.bankName || "");
       }
       setLoading(false);
     });
@@ -58,13 +65,12 @@ export default function BankSettings() {
   }, [router]);
 
   // AUTO-VERIFICATION TRIGGER
-  // When bankCode and accountNumber (10 digits) are present, verify
   useEffect(() => {
     const triggerVerification = async () => {
       if (bankData.accountNumber.length === 10 && bankData.bankCode) {
         setVerifying(true);
-        setBankData(prev => ({ ...prev, accountName: "" })); // Clear name while verifying
-
+        // Don't clear if it's already verified and matches (prevents flickering)
+        
         try {
           const response = await fetch(
             `/api/verify-bank?accountNumber=${bankData.accountNumber}&bankCode=${bankData.bankCode}`
@@ -78,15 +84,21 @@ export default function BankSettings() {
           }
         } catch (error) {
           console.error("Verification error", error);
+          setBankData(prev => ({ ...prev, accountName: "Verification Failed" }));
         } finally {
           setVerifying(false);
         }
       }
     };
 
-    const timeoutId = setTimeout(triggerVerification, 500); // Debounce for 500ms
+    const timeoutId = setTimeout(triggerVerification, 600); // Debounce
     return () => clearTimeout(timeoutId);
   }, [bankData.accountNumber, bankData.bankCode]);
+
+  // Filter banks based on search
+  const filteredBanks = banks.filter(bank => 
+    bank.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const saveSettings = async (e) => {
     e.preventDefault();
@@ -132,32 +144,58 @@ export default function BankSettings() {
 
         <form onSubmit={saveSettings} className="space-y-6">
           
-          {/* BANK SELECTION */}
-          <div>
+          {/* SEARCHABLE BANK SELECTION */}
+          <div className="relative">
             <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-2 mb-2 block">Choose Bank</label>
             <div className="relative">
-              <select 
-                required
-                className="w-full p-5 bg-gray-50 border-2 border-transparent rounded-2xl font-bold outline-none focus:border-black transition-all appearance-none cursor-pointer"
-                value={bankData.bankCode}
+              <input 
+                type="text"
+                placeholder="Search Bank Name (e.g. Zenith, GTB)"
+                className="w-full p-5 bg-gray-50 border-2 border-transparent rounded-2xl font-bold outline-none focus:border-black transition-all"
+                value={searchTerm}
                 onChange={(e) => {
-                  const selectedBank = banks.find(b => b.code === e.target.value);
-                  setBankData({
-                    ...bankData, 
-                    bankCode: e.target.value, 
-                    bankName: selectedBank ? selectedBank.name : ""
-                  });
+                  setSearchTerm(e.target.value);
+                  setShowDropdown(true);
+                  // Reset code if they start typing again to force re-selection
+                  if (bankData.bankCode) setBankData(prev => ({ ...prev, bankCode: "", bankName: "", accountName: "" }));
                 }}
-              >
-                <option value="">Select a Nigerian Bank</option>
-                {banks.map((bank) => (
-                  <option key={bank.id} value={bank.code}>{bank.name}</option>
-                ))}
-              </select>
-              <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none">
+                onFocus={() => setShowDropdown(true)}
+              />
+              <div className="absolute right-5 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                {searchTerm && (
+                  <button type="button" onClick={() => { setSearchTerm(""); setBankData(prev => ({ ...prev, bankCode: "", bankName: "" })); }}>
+                    <X className="h-4 w-4 text-gray-300 hover:text-red-500" />
+                  </button>
+                )}
                 <Search className="h-4 w-4 text-gray-400" />
               </div>
             </div>
+
+            {/* DROPDOWN */}
+            {showDropdown && searchTerm && filteredBanks.length > 0 && (
+              <div className="absolute z-50 w-full mt-2 bg-white border border-gray-100 rounded-2xl shadow-2xl max-h-60 overflow-y-auto overflow-x-hidden">
+                {filteredBanks.map((bank) => (
+                  <button
+                    key={bank.id}
+                    type="button"
+                    className="w-full text-left p-4 hover:bg-[#a3dcf3]/10 transition-colors border-b border-gray-50 last:border-none flex items-center justify-between"
+                    onClick={() => {
+                      setBankData({
+                        ...bankData,
+                        bankCode: bank.code,
+                        bankName: bank.name,
+                        accountName: "" // Reset name to trigger new verification
+                      });
+                      setSearchTerm(bank.name);
+                      setShowDropdown(false);
+                    }}
+                  >
+                    <span className="font-bold text-xs uppercase">{bank.name}</span>
+                    <span className="text-[8px] font-black text-gray-300 tracking-tighter">{bank.code}</span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* ACCOUNT NUMBER */}
@@ -172,12 +210,12 @@ export default function BankSettings() {
                 className="w-full p-5 bg-gray-50 border-2 border-transparent rounded-2xl font-mono font-bold outline-none focus:border-black transition-all"
                 value={bankData.accountNumber}
                 onChange={(e) => {
-                  const val = e.target.value.replace(/\D/g, ''); // Numbers only
+                  const val = e.target.value.replace(/\D/g, ''); 
                   setBankData({...bankData, accountNumber: val});
                 }}
               />
               <div className="absolute right-5 top-1/2 -translate-y-1/2">
-                {verifying && <Loader2 className="h-5 w-5 animate-spin text-gray-400" />}
+                {verifying && <Loader2 className="h-5 w-5 animate-spin text-[#a3dcf3]" />}
               </div>
             </div>
           </div>
@@ -185,12 +223,14 @@ export default function BankSettings() {
           {/* ACCOUNT NAME (VERIFIED RESULT) */}
           <div className="relative">
             <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-2 mb-2 block">Account Name (Auto-Verified)</label>
-            <div className={`w-full p-5 rounded-2xl border-2 font-black text-sm flex items-center justify-between ${
+            <div className={`w-full p-5 rounded-2xl border-2 font-black text-sm flex items-center justify-between transition-all duration-500 ${
               bankData.accountName && bankData.accountName !== "Verification Failed" 
                 ? 'bg-emerald-50 border-emerald-100 text-emerald-900' 
+                : bankData.accountName === "Verification Failed"
+                ? 'bg-red-50 border-red-100 text-red-900'
                 : 'bg-gray-50 border-transparent text-gray-400'
             }`}>
-              <span>{bankData.accountName || "Waiting for details..."}</span>
+              <span className="uppercase">{bankData.accountName || "Waiting for details..."}</span>
               {bankData.accountName && bankData.accountName !== "Verification Failed" && (
                 <CheckCircle className="h-5 w-5 text-emerald-500" />
               )}

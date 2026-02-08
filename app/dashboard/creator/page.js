@@ -11,6 +11,7 @@ import {
   getDoc,
   doc,
   addDoc,
+  updateDoc,
   serverTimestamp,
   onSnapshot,
   orderBy
@@ -20,6 +21,7 @@ import { auth, db } from "@/lib/firebase";
 
 import GlobalNotification from "@/app/components/GlobalNotification";
 import CreatorNavbar from "@/app/components/CreatorNavbar";
+import CreatorPricingSettings from "@/app/components/dashboard/CreatorPricingSettings";
 
 import SubmissionModal from "@/app/components/SubmissionModal";
 import { 
@@ -116,6 +118,35 @@ export default function CreatorDashboard() {
 
     return () => unsubscribe();
   }, [router]);
+
+  // NEW: HANDLE RATE UPDATES
+  const handleRateSave = async (data) => {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    try {
+      const creatorRef = doc(db, "creators", user.uid);
+      await updateDoc(creatorRef, {
+        avgViews: data.avgViews,
+        niche: data.niche,
+        baseRate: data.baseRate,
+        pricingLastUpdated: serverTimestamp()
+      });
+      
+      // Update local state to reflect changes immediately
+      setUserData(prev => ({
+        ...prev,
+        avgViews: data.avgViews,
+        niche: data.niche,
+        baseRate: data.baseRate
+      }));
+
+      alert("Market rates updated successfully!");
+    } catch (err) {
+      console.error("Rate update error:", err);
+      alert("Failed to save rates.");
+    }
+  };
 
   const applyToCampaign = async (campaignId) => {
     const user = auth.currentUser;
@@ -251,6 +282,18 @@ export default function CreatorDashboard() {
               </div>
             )}
           </div>
+        </div>
+
+        {/* PHASE 2: INTEGRATED PRICING TOOL */}
+        <div className="mb-12">
+          <CreatorPricingSettings 
+            initialData={{
+              avgViews: userData?.avgViews,
+              niche: userData?.niche,
+              isVerified: true // Assuming verified based on your UI badge above
+            }}
+            onSave={handleRateSave} 
+          />
         </div>
 
         {/* OPPORTUNITIES GRID */}

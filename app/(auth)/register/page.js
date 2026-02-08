@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, sendEmailVerification, signOut } from "firebase/auth";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
 import { useRouter, useSearchParams } from "next/navigation"; // Added useSearchParams
@@ -13,6 +13,7 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showVerification, setShowVerification] = useState(false);
   const router = useRouter();
   
   // Initialize search params to capture the ?plan= note from the URL
@@ -35,19 +36,27 @@ export default function RegisterPage() {
     try {
       // 1. Create the Auth Account
       const res = await createUserWithEmailAndPassword(auth, email, password);
+      const user = res.user;
 
-      // 2. Determine Role and Plan
-      // If they came from the pricing page with a plan, they are definitely a business.
+      // 2. Trigger Verification Email
+      const actionCodeSettings = {
+        // This ensures that after they click the link, they are sent to the login page
+        url: `${window.location.origin}/login`,
+        handleCodeInApp: true,
+      };
+      await sendEmailVerification(user, actionCodeSettings);
+
+      // 3. Determine Role and Plan
       const initialRole = selectedPlan ? "business" : null;
       const initialPlan = selectedPlan || "free";
 
-      // 3. Initialize the base user document in Firestore
-      await setDoc(doc(db, "users", res.user.uid), {
-        uid: res.user.uid,
+      // 4. Initialize the base user document in Firestore
+      await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
         name: fullName, 
         email: email,
-        role: initialRole, // Automatically set if plan exists
-        plan: initialPlan, // Saves the "pro" or "free" label
+        role: initialRole, 
+        plan: initialPlan, 
         createdAt: serverTimestamp(), 
       });
 
@@ -58,10 +67,12 @@ export default function RegisterPage() {
         plan: initialPlan
       });
 
-      // 4. Move them to the next step
-      // If we already know they are a business, we could skip the choice screen, 
-      // but keeping your /onboarding flow as requested for profile setup.
-      router.push("/onboarding");
+      // 5. Sign Out immediately
+      // We sign them out so they cannot access the dashboard until they verify their email
+      await signOut(auth);
+
+      // 6. Show the verification success UI
+      setShowVerification(true);
       
     } catch (error) {
       console.error("Registration error:", error.message);
@@ -71,6 +82,32 @@ export default function RegisterPage() {
     }
   };
 
+  // SUCCESS STATE VIEW
+  if (showVerification) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#fcfcfc] px-4">
+        <div className="max-w-md w-full bg-white p-10 rounded-[2.5rem] shadow-2xl border border-gray-100 text-center animate-in fade-in zoom-in duration-500">
+          <div className="h-20 w-20 bg-[#a3dcf3]/10 rounded-3xl flex items-center justify-center mx-auto mb-6">
+            <Mail className="h-10 w-10 text-[#a3dcf3]" />
+          </div>
+          <h1 className="text-3xl font-black text-gray-900 mb-4 tracking-tighter uppercase">Check Your Inbox</h1>
+          <p className="text-sm text-gray-500 mb-8 font-medium leading-relaxed">
+            We've sent a secure verification link to <br/>
+            <span className="text-black font-bold underline">{email}</span>. <br/>
+            Please verify your email to activate your account.
+          </p>
+          <button
+            onClick={() => router.push("/login")}
+            className="w-full bg-black text-white py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl hover:bg-gray-800 transition-all"
+          >
+            Continue to Login
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ORIGINAL REGISTRATION FORM
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-[#fcfcfc] px-4">
       {/* Branding Section */}

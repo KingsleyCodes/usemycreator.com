@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react"; // Added useEffect
 import { createUserWithEmailAndPassword, sendEmailVerification, signOut } from "firebase/auth";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
-import { useRouter, useSearchParams } from "next/navigation"; // Added useSearchParams
-import * as fbq from "@/lib/fpixel"; // Import Pixel utility
+import { useRouter, useSearchParams } from "next/navigation"; 
+import * as fbq from "@/lib/fpixel"; 
 import { Sparkles, Mail, Lock, User, ArrowRight, ShieldCheck } from "lucide-react";
 
 export default function RegisterPage() {
@@ -16,15 +16,25 @@ export default function RegisterPage() {
   const [showVerification, setShowVerification] = useState(false);
   const router = useRouter();
   
-  // Initialize search params to capture the ?plan= note from the URL
   const searchParams = useSearchParams();
-  const selectedPlan = searchParams.get("plan"); // e.g., "pro" or "free"
+  const selectedPlan = searchParams.get("plan"); 
+  const selectedRole = searchParams.get("role"); // Capture the role from onboarding
+
+  // ==========================================================
+  // NEW: ONBOARDING ENFORCEMENT
+  // ==========================================================
+  useEffect(() => {
+    // If there is no role selected and no specific plan, 
+    // force them to go to onboarding first.
+    if (!selectedRole && !selectedPlan) {
+      router.push("/onboarding");
+    }
+  }, [selectedRole, selectedPlan, router]);
 
   const handleRegister = async (e) => {
     e.preventDefault();
     setLoading(true);
 
-    // Track the registration attempt as a Lead
     fbq.event('Lead', {
       content_name: 'Registration Form Submission',
       content_category: 'User Onboarding',
@@ -46,28 +56,55 @@ export default function RegisterPage() {
       };
       await sendEmailVerification(user, actionCodeSettings);
 
-      // 3. Determine Role and Plan
-      const initialRole = selectedPlan ? "business" : null;
-      const initialPlan = selectedPlan || "free";
+      // 3. Determine Final Role and Plan
+      // Logic: Use selectedRole from onboarding, fallback to 'business' if a plan was picked
+      const finalRole = selectedRole || (selectedPlan ? "business" : null);
+      const finalPlan = selectedPlan || "free";
 
-      // 4. Initialize the base user document in Firestore
+      // 4. Initialize THE ENTIRE INFRASTRUCTURE for this user
+      // We do this now so the email link can lead straight to a ready dashboard
+      
+      // A. Base User Doc
       await setDoc(doc(db, "users", user.uid), {
         uid: user.uid,
         name: fullName, 
         email: email,
-        role: initialRole, 
-        plan: initialPlan, 
+        role: finalRole, 
+        plan: finalPlan, 
         createdAt: serverTimestamp(), 
       });
 
-      // Track the final success of the registration
+      // B. Sub-Collection Initialization (The Direct Entry Logic)
+      if (finalRole === "creator") {
+        await setDoc(doc(db, "creators", user.uid), {
+          uid: user.uid,
+          name: fullName,
+          email: email,
+          bio: "",
+          specialty: "General Creator",
+          isPublic: true,
+          profileSlug: fullName.toLowerCase().replace(/\s+/g, '-'),
+          socials: { instagram: "", tiktok: "", youtube: "" },
+          createdAt: serverTimestamp(),
+        });
+      } else if (finalRole === "business") {
+        await setDoc(doc(db, "businesses", user.uid), {
+          uid: user.uid,
+          companyName: fullName,
+          email: email,
+          currentPlan: finalPlan,
+          createdAt: serverTimestamp(),
+        });
+      }
+
       fbq.event('CompleteRegistration', {
         content_name: 'Account Initialized',
         status: 'Success',
-        plan: initialPlan
+        role: finalRole,
+        plan: finalPlan
       });
 
-      // 5. Sign Out immediately
+      // 5. Sign Out immediately (Security Gate)
       // We sign them out so they cannot access the dashboard until they verify their email
       await signOut(auth);
 
@@ -90,11 +127,11 @@ export default function RegisterPage() {
           <div className="h-20 w-20 bg-[#a3dcf3]/10 rounded-3xl flex items-center justify-center mx-auto mb-6">
             <Mail className="h-10 w-10 text-[#a3dcf3]" />
           </div>
-          <h1 className="text-3xl font-black text-gray-900 mb-4 tracking-tighter uppercase">Check Your Inbox</h1>
+          <h1 className="text-3xl font-black text-gray-900 mb-4 tracking-tighter uppercase">Verify Your Identity</h1>
           <p className="text-sm text-gray-500 mb-8 font-medium leading-relaxed">
             We've sent a secure verification link to <br/>
             <span className="text-black font-bold underline">{email}</span>. <br/>
-            Please verify your email to activate your account.
+            Please verify your email to activate your {selectedRole || "institutional"} portal.
           </p>
           <button
             onClick={() => router.push("/login")}
@@ -124,12 +161,13 @@ export default function RegisterPage() {
       </div>
 
       <div className="max-w-md w-full bg-white p-8 sm:p-10 rounded-[2.5rem] shadow-2xl border border-gray-100">
-        <h1 className="text-3xl font-black text-gray-900 mb-2 tracking-tighter">Initialize Account</h1>
+        <h1 className="text-3xl font-black text-gray-900 mb-2 tracking-tighter">
+          {selectedRole === 'creator' ? 'Creator Portal' : selectedRole === 'business' ? 'Business Portal' : 'Initialize Account'}
+        </h1>
         
-        {/* Added a dynamic message if a plan is selected */}
         <p className="text-sm text-gray-500 mb-8 font-medium">
-          {selectedPlan 
-            ? `You are registering for the ${selectedPlan.toUpperCase()} infrastructure.` 
+          {selectedRole 
+            ? `Finalize your registration as a ${selectedRole.toUpperCase()}.` 
             : "Join the institutional creator infrastructure."}
         </p>
         

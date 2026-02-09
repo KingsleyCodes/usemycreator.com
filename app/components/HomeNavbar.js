@@ -34,7 +34,7 @@ export default function HomeNavbar() {
     { name: "Blog", href: "/blog" },
   ];
 
-  // Tracking Helpers - Kept exactly as provided
+  // Tracking Helpers - Updated to point to Onboarding
   const trackLoginClick = () => {
     fbq.event('Contact', { content_name: 'Navbar Login Click', location: 'HomeNavbar' });
     router.push("/login");
@@ -42,7 +42,8 @@ export default function HomeNavbar() {
 
   const trackRegisterClick = () => {
     fbq.event('Contact', { content_name: 'Navbar Register Click', location: 'HomeNavbar' });
-    router.push("/register");
+    // DIRECT PATH: Go straight to role selection
+    router.push("/onboarding");
   };
 
   return (
@@ -150,7 +151,7 @@ export default function HomeNavbar() {
             <div className="p-6 border-t border-gray-100 space-y-3">
               <button 
                 onClick={() => {
-                  trackRegisterClick();
+                  trackRegisterClick(); // This now points to onboarding
                   setMobileMenuOpen(false);
                 }}
                 className="w-full py-4 bg-black text-white rounded-xl font-bold text-sm uppercase tracking-widest shadow-xl"

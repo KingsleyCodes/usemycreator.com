@@ -41,14 +41,16 @@ export default function LoginPage() {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
+      // Force refresh the user object to get the latest emailVerified status
+      await user.reload();
+
       // ==========================================================
-      // PHASE 2: EMAIL VERIFICATION GATE
+      // EMAIL VERIFICATION GATE
       // ==========================================================
       if (!user.emailVerified) {
         setVerificationError(true);
         setLoading(false);
         // We do not signOut yet so the user can click 'Resend' 
-        // but we stop the redirect logic here.
         return;
       }
 
@@ -98,7 +100,16 @@ export default function LoginPage() {
       if (userDoc.exists()) {
         const data = userDoc.data();
         fbq.event('CompleteRegistration', { content_name: 'User Login Success', role: data.role });
-        router.push(data.role === "business" ? "/dashboard/business" : "/dashboard/creator");
+        
+        // Dynamic reroute based on role stored during registration
+        if (data.role === "business") {
+          router.push("/dashboard/business");
+        } else if (data.role === "creator") {
+          router.push("/dashboard/creator");
+        } else {
+          // If no role found (shouldn't happen with our new flow), send to public onboarding
+          router.push("/onboarding");
+        }
       } else {
         alert("User data not found. Please sign up.");
         await signOut(auth);
@@ -106,7 +117,7 @@ export default function LoginPage() {
 
     } catch (error) {
       console.error("Login error:", error);
-      if (error.code === 'auth/invalid-credential') {
+      if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
         alert("Incorrect email or password.");
       } else {
         alert(error.message);
@@ -201,7 +212,8 @@ export default function LoginPage() {
               onClick={(e) => {
                 e.preventDefault();
                 fbq.event('Contact', { content_name: 'Login Page Switch to Register' });
-                router.push("/register");
+                // Now leads back to public onboarding to select intent
+                router.push("/onboarding");
               }}
               className="text-black hover:text-[#a3dcf3] transition-colors font-black"
             >

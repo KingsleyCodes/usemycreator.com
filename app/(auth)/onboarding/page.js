@@ -1,94 +1,22 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
-import { auth, db } from "@/lib/firebase";
-import { useAuth } from "@/app/context/AuthContext"; // Import our new context
 import { Video, Building2, Loader2, Sparkles } from "lucide-react";
 
 export default function OnboardingPage() {
-  const { user, loading: authLoading } = useAuth(); // Use global auth state
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  // EFFECT: Auto-redirect if role is already assigned (from Pricing Page)
-  useEffect(() => {
-    const autoInitialize = async () => {
-      if (!authLoading && user && user.role) {
-        setLoading(true);
-        try {
-          // If they have a role but haven't been initialized in their specific collection yet
-          await handleSelectRole(user.role, true); 
-        } catch (error) {
-          console.error("Auto-onboarding error:", error);
-        } finally {
-          setLoading(false);
-        }
-      }
-    };
-    autoInitialize();
-  }, [user, authLoading]);
-
-  const handleSelectRole = async (role, isAuto = false) => {
-    const currentUser = auth.currentUser;
-    if (!currentUser) {
-      router.push("/login");
-      return;
-    }
-
-    if (!isAuto) setLoading(true);
-
-    try {
-      // 1. Get current data to preserve the Name from registration
-      const userSnap = await getDoc(doc(db, "users", currentUser.uid));
-      const userData = userSnap.exists() ? userSnap.data() : {};
-      const fullName = userData.name || "New User";
-      const plan = userData.plan || "free"; // Default to free if not set
-
-      // 2. Update the main User document
-      await setDoc(doc(db, "users", currentUser.uid), {
-        role: role,
-        plan: plan,
-        updatedAt: serverTimestamp(),
-      }, { merge: true });
-
-      // 3. Initialize specific sub-collections
-      if (role === "creator") {
-        await setDoc(doc(db, "creators", currentUser.uid), {
-          uid: currentUser.uid,
-          name: fullName,
-          email: currentUser.email,
-          bio: "",
-          specialty: "General Creator",
-          isPublic: true,
-          profileSlug: fullName.toLowerCase().replace(/\s+/g, '-'),
-          socials: { instagram: "", tiktok: "", youtube: "" },
-          createdAt: serverTimestamp(),
-        }, { merge: true });
-      } else if (role === "business") {
-        await setDoc(doc(db, "businesses", currentUser.uid), {
-          uid: currentUser.uid,
-          companyName: fullName,
-          email: currentUser.email,
-          currentPlan: plan, // Store their plan here too for easy dashboard access
-          createdAt: serverTimestamp(),
-        }, { merge: true });
-      }
-
-      // 4. Route to the correct dashboard
-      router.push(`/dashboard/${role}`);
-      
-    } catch (error) {
-      console.error("Onboarding Error:", error);
-      if (!isAuto) alert("System failed to initialize profile. Try again.");
-    } finally {
-      if (!isAuto) setLoading(false);
-    }
+  // Now a simple navigation function for the public flow
+  const handleSelectRole = (role) => {
+    setLoading(true);
+    // Redirect to register page with the role as a query parameter
+    router.push(`/register?role=${role}`);
   };
 
-  // Show a clean loader while checking for auto-redirects
-  if (authLoading || (loading && !auth.currentUser)) {
+  // While redirecting, show the loader
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
         <Loader2 className="h-8 w-8 animate-spin text-[#a3dcf3]" />

@@ -7,12 +7,11 @@ export default async function sitemap() {
 
   try {
     // 1. Fetch all creators from your 'creators' collection
+    // This is high value for SEO as individual profiles rank for names
     const creatorsSnap = await getDocs(collection(db, "creators"));
     
-    // 2. Map through creators to create the URL objects
     const creatorUrls = creatorsSnap.docs.map((doc) => {
       const data = doc.data();
-      // Only add if the profileSlug exists to avoid broken links
       if (!data.profileSlug) return null;
       return {
         url: `${baseUrl}/profile/${data.profileSlug}`,
@@ -20,9 +19,10 @@ export default async function sitemap() {
         changeFrequency: 'weekly',
         priority: 0.6,
       };
-    }).filter(Boolean); // Remove nulls
+    }).filter(Boolean);
 
-    // 3. Define your STATIC core pages (Crucial for Sitelinks)
+    // 2. Define your STATIC core pages
+    // REMOVED: /login and /register to stop the "Page with redirect" errors
     const staticPages = [
       {
         url: baseUrl,
@@ -40,7 +40,7 @@ export default async function sitemap() {
         url: `${baseUrl}/pricing`,
         lastModified: new Date().toISOString(),
         changeFrequency: 'monthly',
-        priority: 0.9, // Higher priority to encourage Sitelink
+        priority: 0.9,
       },
       {
         url: `${baseUrl}/blog`,
@@ -60,29 +60,15 @@ export default async function sitemap() {
         changeFrequency: 'monthly',
         priority: 0.7,
       },
-      {
-        url: `${baseUrl}/login`,
-        lastModified: new Date().toISOString(),
-        changeFrequency: 'yearly',
-        priority: 0.5,
-      },
-      {
-        url: `${baseUrl}/register`,
-        lastModified: new Date().toISOString(),
-        changeFrequency: 'yearly',
-        priority: 0.5,
-      },
     ];
 
-    // 4. Combine them
     return [...staticPages, ...creatorUrls];
   } catch (error) {
     console.error("Sitemap error:", error);
-    // Return the base URL and static pages if Firebase fails
     return [
-      { url: baseUrl, lastModified: new Date().toISOString() },
-      { url: `${baseUrl}/pricing`, lastModified: new Date().toISOString() },
-      { url: `${baseUrl}/blog`, lastModified: new Date().toISOString() },
+      { url: baseUrl, lastModified: new Date().toISOString(), priority: 1.0 },
+      { url: `${baseUrl}/solutions`, lastModified: new Date().toISOString(), priority: 0.8 },
+      { url: `${baseUrl}/pricing`, lastModified: new Date().toISOString(), priority: 0.9 },
     ];
   }
 }

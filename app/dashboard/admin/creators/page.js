@@ -184,7 +184,7 @@ export default function CreatorsAdminPage() {
                  {selectedCreator.bankDetails ? (
                    <div className="space-y-3">
                      <p className="text-sm font-bold tracking-tight text-white/90">{selectedCreator.bankDetails.bankName}</p>
-                     <p className="text-xl font-mono text-[#a3dcf3] font-bold">{selectedCreator.bankDetails.accountNumber}</p>
+                     <p className="text-xl font-mono text-[#22c55e] font-bold">{selectedCreator.bankDetails.accountNumber}</p>
                      <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest">{selectedCreator.bankDetails.accountName}</p>
                    </div>
                  ) : (

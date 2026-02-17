@@ -68,7 +68,7 @@ export default function PaymentPage() {
 
   if (!campaign) return (
     <div className="min-h-screen flex items-center justify-center bg-white">
-      <Loader2 className="h-10 w-10 animate-spin text-[#a3dcf3]" />
+      <Loader2 className="h-10 w-10 animate-spin text-[#22c55e]" />
     </div>
   );
 
@@ -99,8 +99,8 @@ export default function PaymentPage() {
         {/* Payment Card */}
         <div className="w-full bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden relative">
           
-          <div className="h-1.5 w-full bg-[#a3dcf3]/10">
-            <div className="h-full bg-[#a3dcf3] w-full animate-in slide-in-from-left duration-1000"></div>
+          <div className="h-1.5 w-full bg-[#22c55e]/10">
+            <div className="h-full bg-[#22c55e] w-full animate-in slide-in-from-left duration-1000"></div>
           </div>
 
           <div className="p-6 md:p-12">
@@ -124,7 +124,7 @@ export default function PaymentPage() {
             {/* Campaign Summary Box */}
             <div className="mb-8 bg-[#F9FAFB] border border-gray-100 rounded-xl p-4 md:p-6 flex items-center justify-between">
               <div className="flex items-center gap-4 overflow-hidden">
-                <div className="h-10 w-10 bg-black rounded-lg flex items-center justify-center text-[#a3dcf3] shrink-0">
+                <div className="h-10 w-10 bg-black rounded-lg flex items-center justify-center text-[#22c55e] shrink-0">
                   {campaign.platform === "Twitter" ? <Twitter className="h-5 w-5" /> : <CheckCircle2 className="h-5 w-5" />}
                 </div>
                 <div className="min-w-0">
@@ -170,10 +170,10 @@ export default function PaymentPage() {
                 className="w-full bg-black text-white py-4 md:py-5 rounded-full font-bold text-xs uppercase tracking-[0.2em] hover:bg-gray-800 transition-all disabled:opacity-50 flex items-center justify-center gap-3 shadow-xl"
               >
                 {processing ? (
-                  <Loader2 className="h-4 w-4 animate-spin text-[#a3dcf3]" />
+                  <Loader2 className="h-4 w-4 animate-spin text-[#22c55e]" />
                 ) : (
                   <>
-                    <CreditCard className="h-4 w-4 text-[#a3dcf3]" /> Pay via Paystack
+                    <CreditCard className="h-4 w-4 text-[#22c55e]" /> Pay via Paystack
                   </>
                 )}
               </button>

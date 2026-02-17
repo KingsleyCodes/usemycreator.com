@@ -140,7 +140,7 @@ export default function CreatorPublicProfileClient({ slug }) {
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => !submitting && setIsRequesting(false)} />
           <div className="relative h-full w-full max-w-lg bg-white shadow-2xl p-10 flex flex-col animate-in slide-in-from-right duration-300">
             <div className="flex justify-between items-center mb-10">
-              <h2 className="text-2xl font-black uppercase tracking-tighter">Initialize <span className="text-[#a3dcf3]">Brief</span></h2>
+              <h2 className="text-2xl font-black uppercase tracking-tighter">Initialize <span className="text-[#22c55e]">Brief</span></h2>
               <button onClick={() => setIsRequesting(false)} className="p-2 hover:bg-gray-100 rounded-full transition-all">
                 <X className="h-6 w-6" />
               </button>
@@ -149,19 +149,19 @@ export default function CreatorPublicProfileClient({ slug }) {
             <form onSubmit={handleSendRequest} className="space-y-6 flex-1">
               <div>
                 <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 block mb-2">Campaign Identity</label>
-                <input required placeholder="e.g. Winter 2026 Collection" className="w-full border-2 border-gray-50 bg-gray-50/50 p-4 rounded-2xl focus:border-[#a3dcf3] focus:bg-white outline-none font-bold text-sm transition-all" onChange={(e) => setBrief({...brief, campaignName: e.target.value})} />
+                <input required placeholder="e.g. Winter 2026 Collection" className="w-full border-2 border-gray-50 bg-gray-50/50 p-4 rounded-2xl focus:border-[#22c55e] focus:bg-white outline-none font-bold text-sm transition-all" onChange={(e) => setBrief({...brief, campaignName: e.target.value})} />
               </div>
               <div>
                 <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 block mb-2">Allocated Budget ($)</label>
-                <input required type="number" placeholder="e.g. 2500" className="w-full border-2 border-gray-50 bg-gray-50/50 p-4 rounded-2xl focus:border-[#a3dcf3] focus:bg-white outline-none font-bold text-sm transition-all" onChange={(e) => setBrief({...brief, budget: e.target.value})} />
+                <input required type="number" placeholder="e.g. 2500" className="w-full border-2 border-gray-50 bg-gray-50/50 p-4 rounded-2xl focus:border-[#22c55e] focus:bg-white outline-none font-bold text-sm transition-all" onChange={(e) => setBrief({...brief, budget: e.target.value})} />
               </div>
               <div>
                 <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 block mb-2">Deployment Details</label>
-                <textarea required rows="6" placeholder="Describe deliverables..." className="w-full border-2 border-gray-50 bg-gray-50/50 p-4 rounded-2xl focus:border-[#a3dcf3] focus:bg-white outline-none font-medium text-sm transition-all resize-none" onChange={(e) => setBrief({...brief, details: e.target.value})} />
+                <textarea required rows="6" placeholder="Describe deliverables..." className="w-full border-2 border-gray-50 bg-gray-50/50 p-4 rounded-2xl focus:border-[#22c55e] focus:bg-white outline-none font-medium text-sm transition-all resize-none" onChange={(e) => setBrief({...brief, details: e.target.value})} />
               </div>
               <div className="pt-4">
                 <button disabled={submitting} type="submit" className="w-full bg-black text-white py-6 rounded-2xl font-black uppercase text-xs tracking-[0.2em] shadow-xl flex items-center justify-center gap-3 hover:bg-gray-800 transition-all disabled:opacity-50">
-                  {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <>Deploy Proposal <Send className="h-4 w-4 text-[#a3dcf3]" /></>}
+                  {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <>Deploy Proposal <Send className="h-4 w-4 text-[#22c55e]" /></>}
                 </button>
               </div>
             </form>
@@ -172,7 +172,7 @@ export default function CreatorPublicProfileClient({ slug }) {
       {/* --- PUBLIC PAGE UI --- */}
       <div className="h-64 bg-black w-full relative overflow-hidden">
         <div className="absolute inset-0 opacity-20">
-            <div className="absolute inset-0 bg-[radial-gradient(#a3dcf3_1px,transparent_1px)] [background-size:20px_20px]"></div>
+            <div className="absolute inset-0 bg-[radial-gradient(#22c55e_1px,transparent_1px)] [background-size:20px_20px]"></div>
         </div>
         <div className="absolute -bottom-20 left-1/2 -translate-x-1/2 md:left-20 md:translate-x-0">
           <div className="h-40 w-40 rounded-[3rem] bg-white p-2 shadow-2xl">
@@ -187,7 +187,7 @@ export default function CreatorPublicProfileClient({ slug }) {
         <div className="flex flex-col lg:flex-row gap-16">
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-6">
-              <span className="bg-[#a3dcf3] text-black px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm">{creator.specialty || "Institutional Creator"}</span>
+              <span className="bg-[#22c55e] text-black px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm">{creator.specialty || "Institutional Creator"}</span>
               <div className="flex items-center gap-1.5 text-gray-400 text-[10px] font-bold uppercase tracking-widest"><ShieldCheck className="h-3.5 w-3.5" /> Verified Deployment</div>
             </div>
             <h1 className="text-6xl font-black text-gray-900 tracking-tighter mb-6 uppercase">{creator.name}</h1>
@@ -199,7 +199,7 @@ export default function CreatorPublicProfileClient({ slug }) {
                     {creator.platforms?.map((platform) => (
                         <a key={platform} href={creator.socialLinks?.[platform]} target="_blank" rel="noopener noreferrer" className="group flex items-center justify-between bg-white border border-gray-100 p-5 rounded-[2rem] shadow-sm hover:border-black hover:shadow-xl transition-all duration-300">
                             <div className="flex items-center gap-4">
-                                <div className="h-10 w-10 bg-gray-50 rounded-xl flex items-center justify-center group-hover:bg-[#a3dcf3] transition-colors">{getPlatformIcon(platform)}</div>
+                                <div className="h-10 w-10 bg-gray-50 rounded-xl flex items-center justify-center group-hover:bg-[#22c55e] transition-colors">{getPlatformIcon(platform)}</div>
                                 <div>
                                     <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Platform</p>
                                     <p className="text-sm font-black text-gray-900">{platform}</p>
@@ -215,11 +215,11 @@ export default function CreatorPublicProfileClient({ slug }) {
           <div className="w-full lg:w-[400px]">
             <div className="bg-white border border-gray-100 rounded-[3rem] p-10 shadow-2xl sticky top-10 border-t-4 border-t-black">
               <div className="flex items-center justify-between mb-8">
-                <h3 className="text-xs font-black uppercase tracking-widest flex items-center gap-2"><Sparkles className="h-4 w-4 text-[#a3dcf3]" /> Partnership Hub</h3>
+                <h3 className="text-xs font-black uppercase tracking-widest flex items-center gap-2"><Sparkles className="h-4 w-4 text-[#22c55e]" /> Partnership Hub</h3>
                 <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></div>
               </div>
               <button onClick={() => currentUser ? setIsRequesting(true) : router.push('/login')} className="w-full bg-black text-white py-6 rounded-[1.5rem] font-black uppercase text-xs tracking-[0.2em] mb-6 hover:bg-gray-800 transition-all flex items-center justify-center gap-3 shadow-xl hover:-translate-y-1">
-                Initialize Request <ArrowUpRight className="h-5 w-5 text-[#a3dcf3]" />
+                Initialize Request <ArrowUpRight className="h-5 w-5 text-[#22c55e]" />
               </button>
               <p className="text-[9px] text-gray-400 font-bold text-center uppercase tracking-[0.2em]">Secure enterprise connection required.</p>
             </div>

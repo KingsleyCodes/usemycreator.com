@@ -95,7 +95,7 @@ export default function CreatorOnboarding() {
             <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 px-1">Full Name</label>
             <input
               required
-              className="w-full border-2 border-gray-50 bg-gray-50/50 p-4 rounded-2xl focus:border-[#a3dcf3] focus:bg-white outline-none font-bold text-sm transition-all"
+              className="w-full border-2 border-gray-50 bg-gray-50/50 p-4 rounded-2xl focus:border-[#22c55e] focus:bg-white outline-none font-bold text-sm transition-all"
               placeholder="e.g. Alex Rivera"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -107,7 +107,7 @@ export default function CreatorOnboarding() {
             <textarea
               required
               rows="3"
-              className="w-full border-2 border-gray-100 bg-gray-50/50 p-4 rounded-2xl focus:border-[#a3dcf3] focus:bg-white outline-none transition-all resize-none font-medium text-sm"
+              className="w-full border-2 border-gray-100 bg-gray-50/50 p-4 rounded-2xl focus:border-[#22c55e] focus:bg-white outline-none transition-all resize-none font-medium text-sm"
               placeholder="Tell brands why you're a great fit..."
               value={bio}
               onChange={(e) => setBio(e.target.value)}
@@ -117,7 +117,7 @@ export default function CreatorOnboarding() {
           <div>
             <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 px-1">Skills</label>
             <input
-              className="w-full border-2 border-gray-100 bg-gray-50/50 p-4 rounded-2xl focus:border-[#a3dcf3] focus:bg-white outline-none font-bold text-sm transition-all"
+              className="w-full border-2 border-gray-100 bg-gray-50/50 p-4 rounded-2xl focus:border-[#22c55e] focus:bg-white outline-none font-bold text-sm transition-all"
               placeholder="UGC, Fitness, Video Editing (comma separated)"
               value={skills}
               onChange={(e) => setSkills(e.target.value)}
@@ -128,7 +128,7 @@ export default function CreatorOnboarding() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#a3dcf3] text-black hover:bg-[#8bcce6] py-5 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl hover:shadow-2xl transition-all transform active:scale-95 disabled:opacity-50"
+              className="w-full bg-[#22c55e] text-black hover:bg-[#8bcce6] py-5 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl hover:shadow-2xl transition-all transform active:scale-95 disabled:opacity-50"
             >
               {loading ? "Initializing Profile..." : "Save & View Jobs"}
             </button>

@@ -82,8 +82,8 @@ export default function BusinessAnalytics() {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
           <div>
             <div className="flex items-center gap-2 mb-2">
-                <div className="h-1 w-12 bg-[#a3dcf3] rounded-full"></div>
-                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#a3dcf3]">Insights Dashboard</span>
+                <div className="h-1 w-12 bg-[#22c55e] rounded-full"></div>
+                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#22c55e]">Insights Dashboard</span>
             </div>
             <h1 className="text-3xl md:text-5xl font-serif font-medium text-gray-900 tracking-tight">Performance Analytics</h1>
             <p className="text-gray-400 text-xs font-medium mt-2">Monitor your brand growth and creator ROI in real-time.</p>
@@ -96,7 +96,7 @@ export default function BusinessAnalytics() {
 
         {loading ? (
           <div className="flex flex-col items-center justify-center py-32">
-            <Loader2 className="h-10 w-10 animate-spin text-[#a3dcf3] mb-4" />
+            <Loader2 className="h-10 w-10 animate-spin text-[#22c55e] mb-4" />
             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-300">Compiling Report...</p>
           </div>
         ) : (
@@ -105,11 +105,11 @@ export default function BusinessAnalytics() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
               {[
                 { label: "Total Invested", value: `₦${stats.totalSpent.toLocaleString()}`, icon: DollarSign, color: "text-emerald-600", bg: "bg-emerald-50" },
-                { label: "Active Briefs", value: stats.activeCampaigns, icon: BarChart3, color: "text-[#a3dcf3]", bg: "bg-[#a3dcf3]/10" },
+                { label: "Active Briefs", value: stats.activeCampaigns, icon: BarChart3, color: "text-[#22c55e]", bg: "bg-[#22c55e]/10" },
                 { label: "Collaborators", value: stats.totalCreators, icon: Users, color: "text-blue-600", bg: "bg-blue-50" },
                 { label: "Avg. Engagement", value: stats.avgEngagement, icon: TrendingUp, color: "text-purple-600", bg: "bg-purple-50" }
               ].map((stat, i) => (
-                <div key={i} className="bg-white border border-gray-200 rounded-[2.5rem] p-7 shadow-sm hover:shadow-xl hover:shadow-[#a3dcf3]/5 transition-all group">
+                <div key={i} className="bg-white border border-gray-200 rounded-[2.5rem] p-7 shadow-sm hover:shadow-xl hover:shadow-[#22c55e]/5 transition-all group">
                   <div className="flex justify-between items-start mb-6">
                     <div className={`h-12 w-12 rounded-2xl ${stat.bg} flex items-center justify-center ${stat.color} group-hover:scale-110 transition-transform`}>
                       <stat.icon className="h-6 w-6" />
@@ -134,7 +134,7 @@ export default function BusinessAnalytics() {
                         <span className="text-[9px] font-bold uppercase text-gray-400">Current</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <div className="h-2 w-2 rounded-full bg-[#a3dcf3]"></div>
+                        <div className="h-2 w-2 rounded-full bg-[#22c55e]"></div>
                         <span className="text-[9px] font-bold uppercase text-gray-400">Projected</span>
                     </div>
                   </div>
@@ -147,7 +147,7 @@ export default function BusinessAnalytics() {
                       <div 
                         key={i} 
                         style={{ height: `${h}%` }} 
-                        className="w-4 md:w-8 bg-black rounded-t-md opacity-[0.03] hover:opacity-100 hover:bg-[#a3dcf3] transition-all cursor-help relative group"
+                        className="w-4 md:w-8 bg-black rounded-t-md opacity-[0.03] hover:opacity-100 hover:bg-[#22c55e] transition-all cursor-help relative group"
                       >
                         <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black text-white text-[8px] py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
                           {h * 120} Reach
@@ -166,14 +166,14 @@ export default function BusinessAnalytics() {
                 
                 <div className="flex-1 flex flex-col items-center justify-center">
                   <div className="h-52 w-52 rounded-full border-[20px] border-gray-50 flex items-center justify-center relative">
-                    <div className="absolute inset-0 rounded-full border-[20px] border-t-black border-r-[#a3dcf3] border-b-gray-200 border-l-gray-300 rotate-12"></div>
+                    <div className="absolute inset-0 rounded-full border-[20px] border-t-black border-r-[#22c55e] border-b-gray-200 border-l-gray-300 rotate-12"></div>
                     <PieChart className="h-7 w-7 text-gray-200" />
                   </div>
                   
                   <div className="mt-12 w-full space-y-4">
                     {[
                       { name: "Instagram", percent: "52%", color: "bg-black" },
-                      { name: "TikTok", percent: "28%", color: "bg-[#a3dcf3]" },
+                      { name: "TikTok", percent: "28%", color: "bg-[#22c55e]" },
                       { name: "Twitter", percent: "20%", color: "bg-gray-200" }
                     ].map((platform, i) => (
                       <div key={i} className="flex items-center justify-between group cursor-default">

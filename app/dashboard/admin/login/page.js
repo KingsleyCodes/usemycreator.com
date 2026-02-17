@@ -64,7 +64,7 @@ export default function AdminLogin() {
     <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center px-4">
       <div className="max-w-md w-full space-y-8 bg-white/5 p-10 rounded-[2.5rem] border border-white/10 shadow-2xl">
         <div className="text-center">
-          <h2 className="text-xs font-black tracking-[0.3em] text-[#a3dcf3] uppercase mb-2">Secure Terminal</h2>
+          <h2 className="text-xs font-black tracking-[0.3em] text-[#22c55e] uppercase mb-2">Secure Terminal</h2>
           <h1 className="text-3xl font-black text-white tracking-tighter">ADMIN ACCESS</h1>
         </div>
 
@@ -76,7 +76,7 @@ export default function AdminLogin() {
                 type="email"
                 required
                 placeholder="admin@usemycreator.com"
-                className="w-full bg-black/50 border border-white/10 p-4 rounded-2xl text-white outline-none focus:border-[#a3dcf3] transition-all"
+                className="w-full bg-black/50 border border-white/10 p-4 rounded-2xl text-white outline-none focus:border-[#22c55e] transition-all"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
@@ -87,7 +87,7 @@ export default function AdminLogin() {
                 type="password"
                 required
                 placeholder="••••••••"
-                className="w-full bg-black/50 border border-white/10 p-4 rounded-2xl text-white outline-none focus:border-[#a3dcf3] transition-all"
+                className="w-full bg-black/50 border border-white/10 p-4 rounded-2xl text-white outline-none focus:border-[#22c55e] transition-all"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
@@ -103,7 +103,7 @@ export default function AdminLogin() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[#a3dcf3] hover:bg-[#8ccce6] text-black py-4 rounded-2xl font-black text-sm uppercase tracking-widest transition-all shadow-lg active:scale-95 disabled:opacity-50"
+            className="w-full bg-[#22c55e] hover:bg-[#8ccce6] text-black py-4 rounded-2xl font-black text-sm uppercase tracking-widest transition-all shadow-lg active:scale-95 disabled:opacity-50"
           >
             {loading ? "Decrypting..." : "Initialize Session"}
           </button>

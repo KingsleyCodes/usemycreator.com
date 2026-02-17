@@ -16,7 +16,7 @@ export default function PlanStatus({ user }) {
           </h2>
         </div>
         <div className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${
-          isPro ? 'bg-[#a3dcf3]/20 text-[#a3dcf3]' : 'bg-gray-100 text-gray-500'
+          isPro ? 'bg-[#22c55e]/20 text-[#22c55e]' : 'bg-gray-100 text-gray-500'
         }`}>
           {isPro ? 'Verified Account' : 'Standard Access'}
         </div>
@@ -29,13 +29,13 @@ export default function PlanStatus({ user }) {
         </div>
         <div className="p-4 rounded-2xl bg-gray-50 border border-gray-100">
           <p className="text-[10px] font-black text-gray-400 uppercase mb-2">Marketplace Fees</p>
-          <p className="text-sm font-bold text-[#a3dcf3]">{isPro ? '0% - Priority' : '5% per campaign'}</p>
+          <p className="text-sm font-bold text-[#22c55e]">{isPro ? '0% - Priority' : '5% per campaign'}</p>
         </div>
       </div>
 
       {!isPro && (
         <button 
-          className="w-full bg-black text-white py-4 rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-[#a3dcf3] hover:text-black transition-all flex items-center justify-center gap-2"
+          className="w-full bg-black text-white py-4 rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-[#22c55e] hover:text-black transition-all flex items-center justify-center gap-2"
         >
           <CreditCard className="h-4 w-4" />
           Update Payment Method

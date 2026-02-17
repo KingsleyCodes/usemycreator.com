@@ -33,7 +33,7 @@ function SuccessContent() {
           <CheckCircle2 className="w-12 h-12 animate-in zoom-in duration-500 delay-200" />
         </div>
         <div className="absolute -top-2 -right-2">
-          <PartyPopper className="h-8 w-8 text-[#a3dcf3] animate-bounce" />
+          <PartyPopper className="h-8 w-8 text-[#22c55e] animate-bounce" />
         </div>
       </div>
 
@@ -75,7 +75,7 @@ function SuccessContent() {
           href="/dashboard/business"
           className="w-full bg-black text-white py-5 rounded-full font-bold text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-gray-800 transition-all shadow-xl group"
         >
-          Go to Dashboard <ArrowRight className="h-4 w-4 text-[#a3dcf3] group-hover:translate-x-1 transition-transform" />
+          Go to Dashboard <ArrowRight className="h-4 w-4 text-[#22c55e] group-hover:translate-x-1 transition-transform" />
         </Link>
         
         <p className="text-[9px] text-gray-400 font-bold uppercase tracking-[0.2em] mt-2">
@@ -114,13 +114,13 @@ export default function PaymentSuccessPage() {
       </nav>
 
       {/* DECORATIVE BACKGROUND ELEMENTS */}
-      <div className="absolute top-[10%] left-[-5%] w-[30%] h-[30%] bg-[#a3dcf3] opacity-[0.03] rounded-full blur-[100px]" />
+      <div className="absolute top-[10%] left-[-5%] w-[30%] h-[30%] bg-[#22c55e] opacity-[0.03] rounded-full blur-[100px]" />
       <div className="absolute bottom-[10%] right-[-5%] w-[30%] h-[30%] bg-emerald-500 opacity-[0.03] rounded-full blur-[100px]" />
 
       <main className="flex flex-col items-center justify-center min-h-[calc(100vh-64px)] p-6">
         <Suspense fallback={
           <div className="flex flex-col items-center">
-            <Loader2 className="h-10 w-10 animate-spin text-[#a3dcf3] mb-4" />
+            <Loader2 className="h-10 w-10 animate-spin text-[#22c55e] mb-4" />
             <p className="text-[10px] font-bold uppercase tracking-widest text-gray-300">Finalizing Receipt...</p>
           </div>
         }>

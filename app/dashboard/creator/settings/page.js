@@ -138,7 +138,7 @@ export default function BankSettings() {
           <div className="h-16 w-16 bg-black text-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl">
             <Building2 className="w-8 h-8" />
           </div>
-          <h1 className="text-2xl font-black tracking-tighter uppercase italic">Payout <span className="text-[#a3dcf3]">Terminal.</span></h1>
+          <h1 className="text-2xl font-black tracking-tighter uppercase italic">Payout <span className="text-[#22c55e]">Terminal.</span></h1>
           <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mt-1">Automatic Bank Verification</p>
         </header>
 
@@ -178,7 +178,7 @@ export default function BankSettings() {
                   <button
                     key={bank.id}
                     type="button"
-                    className="w-full text-left p-4 hover:bg-[#a3dcf3]/10 transition-colors border-b border-gray-50 last:border-none flex items-center justify-between"
+                    className="w-full text-left p-4 hover:bg-[#22c55e]/10 transition-colors border-b border-gray-50 last:border-none flex items-center justify-between"
                     onClick={() => {
                       setBankData({
                         ...bankData,
@@ -215,7 +215,7 @@ export default function BankSettings() {
                 }}
               />
               <div className="absolute right-5 top-1/2 -translate-y-1/2">
-                {verifying && <Loader2 className="h-5 w-5 animate-spin text-[#a3dcf3]" />}
+                {verifying && <Loader2 className="h-5 w-5 animate-spin text-[#22c55e]" />}
               </div>
             </div>
           </div>
@@ -243,7 +243,7 @@ export default function BankSettings() {
           <button 
             type="submit" 
             disabled={saving || verifying || !bankData.accountName || bankData.accountName === "Verification Failed"}
-            className="w-full bg-black text-white py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-[#a3dcf3] hover:text-black transition-all disabled:opacity-20 mt-4 shadow-xl"
+            className="w-full bg-black text-white py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-[#22c55e] hover:text-black transition-all disabled:opacity-20 mt-4 shadow-xl"
           >
             {saving ? "Encrypting & Saving..." : "Lock Bank Details"}
           </button>

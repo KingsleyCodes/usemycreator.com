@@ -57,7 +57,7 @@ export default async function BlogPost({ params }) {
         <p className="text-gray-500 mb-8 font-medium italic">Slug: {slug}.md</p>
         <Link 
           href="/blog" 
-          className="px-8 py-4 bg-[#a3dcf3] text-[#001E00] font-black uppercase text-xs tracking-widest rounded-xl hover:scale-105 transition-all"
+          className="px-8 py-4 bg-[#22c55e] text-[#001E00] font-black uppercase text-xs tracking-widest rounded-xl hover:scale-105 transition-all"
         >
           Return to Feed
         </Link>
@@ -80,7 +80,7 @@ export default async function BlogPost({ params }) {
 
         <header className="max-w-[1000px] mx-auto text-left lg:text-center">
           <div className="flex items-center lg:justify-center gap-3 mb-6">
-            <span className="bg-[#a3dcf3]/20 text-[#001E00] px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
+            <span className="bg-[#22c55e]/20 text-[#001E00] px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
               {post.category || "Insight"}
             </span>
             <span className="text-gray-300">|</span>
@@ -94,7 +94,7 @@ export default async function BlogPost({ params }) {
           </h1>
 
           <div className="flex items-center lg:justify-center gap-4 py-6 border-y border-gray-100">
-            <div className="h-10 w-10 bg-black rounded-full flex items-center justify-center text-[#a3dcf3] font-black text-xs uppercase">
+            <div className="h-10 w-10 bg-black rounded-full flex items-center justify-center text-[#22c55e] font-black text-xs uppercase">
               {post.author ? post.author[0] : 'M'}
             </div>
             <div className="text-left">
@@ -139,7 +139,7 @@ export default async function BlogPost({ params }) {
               prose-headings:font-black prose-headings:uppercase prose-headings:tracking-tighter
               prose-h2:text-3xl prose-h2:mt-12
               prose-p:text-gray-600 prose-p:leading-relaxed prose-p:mb-6
-              prose-blockquote:border-l-4 prose-blockquote:border-[#a3dcf3] prose-blockquote:bg-gray-50 prose-blockquote:p-8 prose-blockquote:rounded-r-2xl prose-blockquote:font-bold prose-blockquote:italic"
+              prose-blockquote:border-l-4 prose-blockquote:border-[#22c55e] prose-blockquote:bg-gray-50 prose-blockquote:p-8 prose-blockquote:rounded-r-2xl prose-blockquote:font-bold prose-blockquote:italic"
             dangerouslySetInnerHTML={{ __html: post.contentHtml }}
           />
 
@@ -153,7 +153,7 @@ export default async function BlogPost({ params }) {
                 {post.keywords.split(',').map((tag) => (
                   <span 
                     key={tag} 
-                    className="text-[10px] font-bold text-gray-500 uppercase tracking-widest px-4 py-2 bg-gray-50 rounded-lg border border-gray-100 hover:border-[#a3dcf3] hover:text-black transition-colors cursor-default"
+                    className="text-[10px] font-bold text-gray-500 uppercase tracking-widest px-4 py-2 bg-gray-50 rounded-lg border border-gray-100 hover:border-[#22c55e] hover:text-black transition-colors cursor-default"
                   >
                     #{tag.trim()}
                   </span>
@@ -170,7 +170,7 @@ export default async function BlogPost({ params }) {
             <p className="text-gray-400 text-sm mb-6 font-medium">Ready to deploy high-converting campaigns in Nigeria?</p>
             <Link 
               href="/register"
-              className="block w-full text-center py-4 bg-[#a3dcf3] text-[#001E00] rounded-xl font-black uppercase text-[10px] tracking-widest hover:scale-105 transition-all"
+              className="block w-full text-center py-4 bg-[#22c55e] text-[#001E00] rounded-xl font-black uppercase text-[10px] tracking-widest hover:scale-105 transition-all"
             >
               Get Started Now
             </Link>

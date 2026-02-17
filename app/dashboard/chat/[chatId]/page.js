@@ -101,7 +101,7 @@ export default function ChatPage() {
               {otherName}
             </h2>
             <div className="flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 bg-[#a3dcf3] rounded-full animate-pulse" />
+              <span className="h-1.5 w-1.5 bg-[#22c55e] rounded-full animate-pulse" />
               <p className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-widest">
                 Identity Verified
               </p>
@@ -111,7 +111,7 @@ export default function ChatPage() {
 
         {/* Institutional Branding Icon */}
         <div className="h-7 w-7 sm:h-9 sm:w-9 bg-black rounded flex items-center justify-center">
-           <span className="text-[#a3dcf3] font-black text-[10px] sm:text-xs">M</span>
+           <span className="text-[#22c55e] font-black text-[10px] sm:text-xs">M</span>
         </div>
       </header>
 
@@ -154,7 +154,7 @@ export default function ChatPage() {
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               placeholder="Type a message..."
-              className="w-full bg-gray-50 border border-gray-100 rounded-xl sm:rounded-2xl px-4 sm:px-6 py-3.5 sm:py-5 text-sm focus:outline-none focus:bg-white focus:border-[#a3dcf3] transition-all pr-12"
+              className="w-full bg-gray-50 border border-gray-100 rounded-xl sm:rounded-2xl px-4 sm:px-6 py-3.5 sm:py-5 text-sm focus:outline-none focus:bg-white focus:border-[#22c55e] transition-all pr-12"
             />
           </div>
           
@@ -163,7 +163,7 @@ export default function ChatPage() {
             className="h-[48px] w-[48px] sm:h-[60px] sm:w-[120px] bg-black text-white rounded-xl sm:rounded-2xl flex items-center justify-center gap-2 hover:bg-gray-800 transition-all active:scale-95 shadow-lg group"
           >
             <span className="hidden sm:block font-black text-xs uppercase tracking-widest">Send</span>
-            <Send className="w-4 h-4 sm:w-3 sm:h-3 text-[#a3dcf3] group-hover:translate-x-1 transition-transform" />
+            <Send className="w-4 h-4 sm:w-3 sm:h-3 text-[#22c55e] group-hover:translate-x-1 transition-transform" />
           </button>
         </form>
         

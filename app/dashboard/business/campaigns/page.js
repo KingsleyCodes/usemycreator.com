@@ -101,7 +101,7 @@ export default function BusinessCampaignsPage() {
               <input 
                 type="text"
                 placeholder="Find a brief..."
-                className="bg-[#F9FAFB] border border-gray-200 pl-11 pr-4 py-3 rounded-full text-xs focus:ring-4 focus:ring-[#a3dcf3]/10 focus:border-[#a3dcf3] outline-none w-full md:w-64 transition-all"
+                className="bg-[#F9FAFB] border border-gray-200 pl-11 pr-4 py-3 rounded-full text-xs focus:ring-4 focus:ring-[#22c55e]/10 focus:border-[#22c55e] outline-none w-full md:w-64 transition-all"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -112,7 +112,7 @@ export default function BusinessCampaignsPage() {
               onClick={() => router.push("/dashboard/business/create-campaign")}
               className="bg-black text-white px-6 py-3 rounded-full text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 hover:bg-gray-800 transition-all shadow-lg active:scale-95"
             >
-              <Plus className="h-3.5 w-3.5 text-[#a3dcf3]" /> New Brief
+              <Plus className="h-3.5 w-3.5 text-[#22c55e]" /> New Brief
             </button>
           </div>
         </div>
@@ -121,7 +121,7 @@ export default function BusinessCampaignsPage() {
       <main className="max-w-6xl mx-auto px-4 py-12">
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20">
-            <Loader2 className="h-10 w-10 animate-spin text-[#a3dcf3] mb-4" />
+            <Loader2 className="h-10 w-10 animate-spin text-[#22c55e] mb-4" />
             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-300 animate-pulse">Syncing Briefs...</p>
           </div>
         ) : filteredCampaigns.length > 0 ? (
@@ -130,15 +130,15 @@ export default function BusinessCampaignsPage() {
               <div 
                 key={campaign.id}
                 onClick={() => router.push(`/dashboard/business/campaigns/${campaign.id}`)}
-                className="group bg-white border border-gray-200 rounded-[2rem] p-6 md:p-8 hover:border-[#a3dcf3] hover:shadow-xl hover:shadow-[#a3dcf3]/5 transition-all cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-8"
+                className="group bg-white border border-gray-200 rounded-[2rem] p-6 md:p-8 hover:border-[#22c55e] hover:shadow-xl hover:shadow-[#22c55e]/5 transition-all cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-8"
               >
                 <div className="flex gap-6 items-start">
-                  <div className="h-14 w-14 bg-black rounded-2xl flex items-center justify-center text-[#a3dcf3] shrink-0 transform group-hover:rotate-3 transition-transform">
+                  <div className="h-14 w-14 bg-black rounded-2xl flex items-center justify-center text-[#22c55e] shrink-0 transform group-hover:rotate-3 transition-transform">
                     {campaign.platform === "Twitter" ? <Twitter className="h-7 w-7" /> : <CheckCircle2 className="h-7 w-7" />}
                   </div>
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-3 mb-2">
-                      <h3 className="text-lg font-bold text-gray-900 group-hover:text-[#a3dcf3] transition-colors truncate max-w-[200px] md:max-w-md">
+                      <h3 className="text-lg font-bold text-gray-900 group-hover:text-[#22c55e] transition-colors truncate max-w-[200px] md:max-w-md">
                         {campaign.title}
                       </h3>
                       <span className={`text-[8px] font-black uppercase px-2.5 py-1 rounded-full border ${getStatusStyle(campaign.status)}`}>

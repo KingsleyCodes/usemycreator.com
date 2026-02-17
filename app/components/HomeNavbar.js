@@ -2,15 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link"; // Added for SEO crawling
+import Link from "next/link";
+import Image from "next/image"; // Optimized for responsive loading
 import * as fbq from "@/lib/fpixel";
 import { 
   Menu, 
   X, 
   ArrowUpRight, 
-  Globe,
   ChevronDown,
-  Sparkles,
   ShieldCheck,
   Zap
 } from "lucide-react";
@@ -27,6 +26,7 @@ export default function HomeNavbar() {
   }, []);
 
   const navLinks = [
+     { name: "Home", href: "/" },
     { name: "Solutions", href: "/solutions" },
     { name: "Creator Network", href: "/creator-network" },
     { name: "Enterprise", href: "/enterprise" },
@@ -34,7 +34,6 @@ export default function HomeNavbar() {
     { name: "Blog", href: "/blog" },
   ];
 
-  // Tracking Helpers - Updated to point to Onboarding
   const trackLoginClick = () => {
     fbq.event('Contact', { content_name: 'Navbar Login Click', location: 'HomeNavbar' });
     router.push("/login");
@@ -42,33 +41,32 @@ export default function HomeNavbar() {
 
   const trackRegisterClick = () => {
     fbq.event('Contact', { content_name: 'Navbar Register Click', location: 'HomeNavbar' });
-    // DIRECT PATH: Go straight to role selection
     router.push("/onboarding");
   };
 
   return (
     <>
-      {/* --- INSTITUTIONAL HOME NAVBAR --- */}
       <nav className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-200 border-b bg-white ${
         isScrolled ? 'shadow-md border-gray-200' : 'border-gray-100'
       }`}>
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 sm:h-20">
             
-            {/* Left: Brand Identity - Updated to USE MY CREATOR */}
+            {/* --- RESPONSIVE LOGO SECTION --- */}
             <Link 
               href="/"
-              className="flex items-center gap-3 cursor-pointer group"
+              className="flex items-center group transition-transform active:scale-95"
             >
-              <div className="h-9 w-9 bg-black rounded flex items-center justify-center shadow-sm transition-transform group-hover:rotate-6">
-                <span className="text-[#a3dcf3] font-black text-lg">U</span>
+              <div className="relative h-8 w-auto sm:h-10 lg:h-12">
+                <img 
+                  src="/usemycreatorlogo.png" 
+                  alt="Use My Creator Logo" 
+                  className="h-full w-auto object-contain"
+                />
               </div>
-              <span className="text-lg font-bold tracking-tight text-gray-900 uppercase hidden xs:block">
-                USE MY <span className="text-gray-400">CREATOR</span>
-              </span>
             </Link>
 
-            {/* Center: Public Links - Converted to Links for Google Crawling */}
+            {/* Center: Public Links */}
             <div className="hidden lg:flex items-center gap-2">
               {navLinks.map((link) => (
                 <Link
@@ -94,7 +92,7 @@ export default function HomeNavbar() {
                 onClick={trackRegisterClick}
                 className="bg-black text-white px-5 py-2.5 sm:px-7 sm:py-3 rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-widest hover:bg-gray-800 transition-all flex items-center gap-2 shadow-lg active:scale-95"
               >
-                Get Started <ArrowUpRight className="h-3.5 w-3.5 text-[#a3dcf3]" />
+                Get Started <ArrowUpRight className="h-3.5 w-3.5 text-[#22c55e]" />
               </button>
 
               <button 
@@ -115,7 +113,8 @@ export default function HomeNavbar() {
           
           <div className="absolute top-0 right-0 h-full w-[85%] max-w-sm bg-white shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
             <div className="p-6 border-b border-gray-100 flex justify-between items-center">
-              <span className="font-bold text-gray-900 tracking-tight uppercase text-sm">Navigation</span>
+              {/* Mobile Drawer Logo */}
+              <img src="/usemycreatorlogo.png" alt="Logo" className="h-8 w-auto object-contain" />
               <button onClick={() => setMobileMenuOpen(false)} className="p-2 bg-gray-50 rounded-lg"><X className="h-5 w-5"/></button>
             </div>
 
@@ -141,9 +140,9 @@ export default function HomeNavbar() {
                   <p className="text-[10px] text-gray-500 font-medium">Enterprise-grade payment protection.</p>
                 </div>
                 <div className="p-5 bg-gray-50 rounded-2xl border border-gray-100">
-                  <Zap className="h-5 w-5 text-[#a3dcf3] mb-2 fill-[#a3dcf3]" />
+                  <Zap className="h-5 w-5 text-[#22c55e] mb-2 fill-[#22c55e]" />
                   <p className="text-xs font-bold text-gray-900 uppercase mb-1">Verified Talent</p>
-                  <p className="text-[10px] text-gray-500 font-medium">Top 3% of Nigerian content creators.</p>
+                  <p className="text-[10px] text-gray-500 font-medium">Top 3% of creators.</p>
                 </div>
               </div>
             </div>
@@ -151,7 +150,7 @@ export default function HomeNavbar() {
             <div className="p-6 border-t border-gray-100 space-y-3">
               <button 
                 onClick={() => {
-                  trackRegisterClick(); // This now points to onboarding
+                  trackRegisterClick();
                   setMobileMenuOpen(false);
                 }}
                 className="w-full py-4 bg-black text-white rounded-xl font-bold text-sm uppercase tracking-widest shadow-xl"

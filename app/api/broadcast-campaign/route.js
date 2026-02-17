@@ -23,7 +23,7 @@ export async function POST(req) {
       subject: `New Campaign: ${campaignTitle} ($${budget}) 💰`,
       html: `
         <div style="font-family: sans-serif; max-width: 600px; border: 1px solid #eee; padding: 20px; border-radius: 20px;">
-          <h2 style="text-transform: uppercase; font-weight: 900;">New <span style="color: #a3dcf3;">Opportunity</span></h2>
+          <h2 style="text-transform: uppercase; font-weight: 900;">New <span style="color: #22c55e;">Opportunity</span></h2>
           <p>A new brand has just posted a campaign that matches the community!</p>
           <div style="background: #f9fafb; padding: 20px; border-radius: 15px; margin: 20px 0;">
             <h3 style="margin: 0;">${campaignTitle}</h3>

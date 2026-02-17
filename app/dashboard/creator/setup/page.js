@@ -88,7 +88,7 @@ export default function CreatorOnboarding() {
             <label className="block text-sm font-black text-gray-700 mb-1 uppercase tracking-wider">Full Name</label>
             <input
               required
-              className="w-full border-2 border-gray-100 p-4 rounded-2xl focus:border-[#a3dcf3] outline-none transition-all"
+              className="w-full border-2 border-gray-100 p-4 rounded-2xl focus:border-[#22c55e] outline-none transition-all"
               placeholder="e.g. Alex Rivera"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -100,7 +100,7 @@ export default function CreatorOnboarding() {
             <textarea
               required
               rows="3"
-              className="w-full border-2 border-gray-100 p-4 rounded-2xl focus:border-[#a3dcf3] outline-none transition-all resize-none"
+              className="w-full border-2 border-gray-100 p-4 rounded-2xl focus:border-[#22c55e] outline-none transition-all resize-none"
               placeholder="Your elevator pitch..."
               value={bio}
               onChange={(e) => setBio(e.target.value)}
@@ -110,7 +110,7 @@ export default function CreatorOnboarding() {
           <div>
             <label className="block text-sm font-black text-gray-700 mb-1 uppercase tracking-wider">Skills</label>
             <input
-              className="w-full border-2 border-gray-100 p-4 rounded-2xl focus:border-[#a3dcf3] outline-none transition-all"
+              className="w-full border-2 border-gray-100 p-4 rounded-2xl focus:border-[#22c55e] outline-none transition-all"
               placeholder="TikTok, Editing, Fitness (comma separated)"
               value={skills}
               onChange={(e) => setSkills(e.target.value)}
@@ -121,7 +121,7 @@ export default function CreatorOnboarding() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#a3dcf3] hover:bg-[#8bcce6] py-5 rounded-2xl font-black text-lg shadow-lg transition-all transform active:scale-95 disabled:opacity-50"
+              className="w-full bg-[#22c55e] hover:bg-[#8bcce6] py-5 rounded-2xl font-black text-lg shadow-lg transition-all transform active:scale-95 disabled:opacity-50"
             >
               {loading ? "Saving Profile..." : "Save & View Jobs"}
             </button>

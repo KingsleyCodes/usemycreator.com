@@ -106,7 +106,7 @@ export default function AdminDashboardHome() {
         <div className="bg-[#001e00] text-white p-8 rounded-[3rem] shadow-2xl relative overflow-hidden">
           <div className="relative z-10">
             <div className="flex items-center gap-3 mb-8">
-              <Building2 className="h-5 w-5 text-[#a3dcf3]" />
+              <Building2 className="h-5 w-5 text-[#22c55e]" />
               <h2 className="text-sm font-black uppercase tracking-[0.2em]">Latest Businesses</h2>
             </div>
             
@@ -117,7 +117,7 @@ export default function AdminDashboardHome() {
                     <p className="font-black uppercase italic tracking-tight">{biz.companyName}</p>
                     <p className="text-[10px] text-gray-500 font-bold uppercase">{biz.email}</p>
                   </div>
-                  <Link href="/dashboard/admin/businesses" className="text-[9px] font-black uppercase text-[#a3dcf3] hover:underline">Verify</Link>
+                  <Link href="/dashboard/admin/businesses" className="text-[9px] font-black uppercase text-[#22c55e] hover:underline">Verify</Link>
                 </div>
               ))}
             </div>

@@ -244,7 +244,7 @@ export default function BusinessDashboard() {
 
   if (loading) return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-[#f9fafb]">
-      <Loader2 className="h-10 w-10 animate-spin text-[#a3dcf3]" />
+      <Loader2 className="h-10 w-10 animate-spin text-[#22c55e]" />
       <p className="mt-4 text-sm font-semibold text-gray-500">Loading your workspace...</p>
     </div>
   );
@@ -276,7 +276,7 @@ export default function BusinessDashboard() {
                 onClick={() => router.push("/dashboard/business/create-campaign")} 
                 className="bg-black text-white px-8 py-3 rounded-full font-bold text-sm hover:bg-gray-800 transition-all flex items-center justify-center gap-2 shadow-lg"
             >
-                <Plus className="h-4 w-4 text-[#a3dcf3]" /> Post a Campaign
+                <Plus className="h-4 w-4 text-[#22c55e]" /> Post a Campaign
             </button>
           </div>
         </div>
@@ -292,7 +292,7 @@ export default function BusinessDashboard() {
             <section>
               <div className="flex items-center justify-between mb-4 px-2">
                 <h3 className="text-lg font-bold">Recent messages</h3>
-                <button className="text-sm font-bold text-[#a3dcf3] hover:underline">View all</button>
+                <button className="text-sm font-bold text-[#22c55e] hover:underline">View all</button>
               </div>
               <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
                 {activeChats.length > 0 ? (
@@ -303,7 +303,7 @@ export default function BusinessDashboard() {
                         onClick={() => router.push(`/dashboard/chat/${chat.id}`)}
                         className="p-5 hover:bg-gray-50 transition-all cursor-pointer flex items-center gap-4 group"
                       >
-                        <div className="h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center text-gray-900 font-bold border border-gray-200 group-hover:border-[#a3dcf3]">
+                        <div className="h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center text-gray-900 font-bold border border-gray-200 group-hover:border-[#22c55e]">
                           {chat.creatorName?.[0] || "C"}
                         </div>
                         <div className="flex-1 min-w-0">
@@ -313,7 +313,7 @@ export default function BusinessDashboard() {
                           </div>
                           <p className="text-sm text-gray-500 truncate italic">"{chat.lastMessage || "Click to start chatting..."}"</p>
                         </div>
-                        <ChevronRight className="h-5 w-5 text-gray-300 group-hover:text-[#a3dcf3]" />
+                        <ChevronRight className="h-5 w-5 text-gray-300 group-hover:text-[#22c55e]" />
                       </div>
                     ))}
                   </div>
@@ -353,7 +353,7 @@ export default function BusinessDashboard() {
                               {isReleased ? (
                                 <span className="text-emerald-600 text-[10px] font-bold uppercase flex items-center gap-1"><CheckCircle2 className="h-3 w-3" /> Completed</span>
                               ) : isInReview ? (
-                                <span className="text-[#a3dcf3] text-[10px] font-bold uppercase flex items-center gap-1 animate-pulse"><Sparkles className="h-3 w-3" /> Review Content</span>
+                                <span className="text-[#22c55e] text-[10px] font-bold uppercase flex items-center gap-1 animate-pulse"><Sparkles className="h-3 w-3" /> Review Content</span>
                               ) : isEscrowed ? (
                                 <span className="text-blue-600 text-[10px] font-bold uppercase flex items-center gap-1"><ShieldCheck className="h-3 w-3" /> Funds in Escrow</span>
                               ) : (
@@ -377,16 +377,16 @@ export default function BusinessDashboard() {
 
                           <div className="flex flex-col sm:flex-row md:flex-col justify-end gap-3 min-w-[180px]">
                             {isInReview ? (
-                              <button onClick={() => { setSelectedCampaignForReview(c); setIsReviewModalOpen(true); }} className="w-full bg-black text-[#a3dcf3] py-3 rounded-full text-xs font-bold uppercase flex items-center justify-center gap-2">
+                              <button onClick={() => { setSelectedCampaignForReview(c); setIsReviewModalOpen(true); }} className="w-full bg-black text-[#22c55e] py-3 rounded-full text-xs font-bold uppercase flex items-center justify-center gap-2">
                                 <Eye className="h-3.5 w-3.5" /> Review & Pay
                               </button>
                             ) : !isEscrowed && !isReleased ? (
                               hasBalance ? (
-                                <button onClick={() => fundFromWallet(c)} className="w-full bg-black text-[#a3dcf3] py-3 rounded-full text-xs font-bold uppercase flex items-center justify-center gap-2 shadow-lg">
+                                <button onClick={() => fundFromWallet(c)} className="w-full bg-black text-[#22c55e] py-3 rounded-full text-xs font-bold uppercase flex items-center justify-center gap-2 shadow-lg">
                                   <Zap className="h-3 w-3 fill-current" /> Use Wallet
                                 </button>
                               ) : (
-                                <button onClick={() => handlePayment(c)} className="w-full bg-[#a3dcf3] text-black py-3 rounded-full text-xs font-bold uppercase flex items-center justify-center gap-2">
+                                <button onClick={() => handlePayment(c)} className="w-full bg-[#22c55e] text-black py-3 rounded-full text-xs font-bold uppercase flex items-center justify-center gap-2">
                                   <CreditCard className="h-3 w-3" /> Fund Escrow
                                 </button>
                               )
@@ -473,12 +473,12 @@ export default function BusinessDashboard() {
                         placeholder="Amount"
                         value={topUpAmount}
                         onChange={(e) => setTopUpAmount(e.target.value)}
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-8 pr-4 py-3 text-sm focus:outline-none focus:border-[#a3dcf3] transition-all"
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-8 pr-4 py-3 text-sm focus:outline-none focus:border-[#22c55e] transition-all"
                     />
                 </div>
                 <button 
                     onClick={initiateTopUp}
-                    className="w-full bg-black text-[#a3dcf3] py-4 rounded-xl font-bold text-xs uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                    className="w-full bg-black text-[#22c55e] py-4 rounded-xl font-bold text-xs uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
                 >
                     Top up Wallet <ArrowUpRight className="h-4 w-4" />
                 </button>

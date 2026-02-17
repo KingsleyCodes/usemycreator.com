@@ -18,21 +18,21 @@ const EnterprisePage = () => {
       
       {/* --- BACKGROUND INFRASTRUCTURE --- */}
       <div className="absolute inset-0 z-0">
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#a3dcf3]/10 blur-[150px] rounded-full" />
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#22c55e]/10 blur-[150px] rounded-full" />
         <div className="absolute inset-0 opacity-[0.1]" 
-             style={{ backgroundImage: `linear-gradient(to right, #a3dcf3 1px, transparent 1px), linear-gradient(to bottom, #a3dcf3 1px, transparent 1px)`, backgroundSize: '80px 80px' }} />
+             style={{ backgroundImage: `linear-gradient(to right, #22c55e 1px, transparent 1px), linear-gradient(to bottom, #22c55e 1px, transparent 1px)`, backgroundSize: '80px 80px' }} />
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto">
         {/* Header Section */}
         <div className="text-center mb-24">
-          <div className="inline-flex items-center gap-2 bg-[#a3dcf3]/10 border border-[#a3dcf3]/20 px-4 py-2 rounded-full mb-6 text-[#a3dcf3]">
+          <div className="inline-flex items-center gap-2 bg-[#22c55e]/10 border border-[#22c55e]/20 px-4 py-2 rounded-full mb-6 text-[#22c55e]">
             <Briefcase className="w-3.5 h-3.5" />
             <span className="text-[10px] font-black uppercase tracking-[0.3em]">Institutional Grade</span>
           </div>
           <h1 className="text-5xl md:text-8xl font-serif font-medium leading-tight mb-8">
             Scale your <br />
-            <span className="text-[#a3dcf3] italic font-normal">content pipeline.</span>
+            <span className="text-[#22c55e] italic font-normal">content pipeline.</span>
           </h1>
           <p className="text-gray-400 text-lg md:text-xl max-w-3xl mx-auto leading-relaxed font-medium">
             High-volume creator operations for brands requiring 50+ monthly content assets. 
@@ -59,8 +59,8 @@ const EnterprisePage = () => {
               icon: <Globe className="h-6 w-6" />
             }
           ].map((item, i) => (
-            <div key={i} className="p-10 rounded-[2.5rem] bg-white/5 border border-white/10 hover:border-[#a3dcf3]/50 transition-all group">
-              <div className="h-14 w-14 rounded-2xl bg-[#a3dcf3]/10 flex items-center justify-center mb-8 text-[#a3dcf3] group-hover:bg-[#a3dcf3] group-hover:text-black transition-all">
+            <div key={i} className="p-10 rounded-[2.5rem] bg-white/5 border border-white/10 hover:border-[#22c55e]/50 transition-all group">
+              <div className="h-14 w-14 rounded-2xl bg-[#22c55e]/10 flex items-center justify-center mb-8 text-[#22c55e] group-hover:bg-[#22c55e] group-hover:text-black transition-all">
                 {item.icon}
               </div>
               <h3 className="text-xl font-bold mb-4 tracking-tight">{item.title}</h3>
@@ -74,14 +74,14 @@ const EnterprisePage = () => {
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
               <h2 className="text-3xl md:text-5xl font-serif mb-6 leading-tight">
-                Your content <br />on <span className="text-[#a3dcf3] italic">autopilot.</span>
+                Your content <br />on <span className="text-[#22c55e] italic">autopilot.</span>
               </h2>
               <p className="text-gray-400 mb-8 leading-relaxed">
                 Unlock our API and managed services to integrate creator-led content directly into your marketing stack.
               </p>
               <ul className="space-y-4 mb-10">
                 {['Direct API Access', 'Whitelabel Options', 'Volume Rebates'].map((check) => (
-                  <li key={check} className="flex items-center gap-3 font-bold text-xs uppercase tracking-widest text-[#a3dcf3]">
+                  <li key={check} className="flex items-center gap-3 font-bold text-xs uppercase tracking-widest text-[#22c55e]">
                     <Zap className="h-4 w-4" /> {check}
                   </li>
                 ))}
@@ -89,7 +89,7 @@ const EnterprisePage = () => {
             </div>
             
             {/* CTA Box / Lead Form */}
-            <div className="bg-[#a3dcf3] p-10 md:p-12 rounded-[2rem] text-[#001E00] min-h-[400px] flex flex-col justify-center transition-all duration-500">
+            <div className="bg-[#22c55e] p-10 md:p-12 rounded-[2rem] text-[#001E00] min-h-[400px] flex flex-col justify-center transition-all duration-500">
               {!showForm ? (
                 <div className="flex flex-col items-center text-center animate-in fade-in">
                   <BarChart3 className="h-12 w-12 mb-6" />

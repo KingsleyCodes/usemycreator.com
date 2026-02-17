@@ -135,7 +135,7 @@ export default function LoginPage() {
         onClick={() => router.push("/")}
       >
         <div className="h-8 w-8 bg-black rounded flex items-center justify-center transition-transform group-hover:scale-110">
-          <Sparkles className="h-4 w-4 text-[#a3dcf3]" />
+          <Sparkles className="h-4 w-4 text-[#22c55e]" />
         </div>
         <span className="text-sm font-black tracking-tighter text-gray-900 uppercase">
           MYCREATOR<span className="text-gray-400">.STUDIO</span>
@@ -143,7 +143,7 @@ export default function LoginPage() {
       </div>
 
       <div className="max-w-md w-full bg-white p-8 sm:p-10 rounded-[2.5rem] shadow-2xl border border-gray-100">
-        <h1 className="text-3xl font-black text-gray-900 mb-2 tracking-tighter uppercase italic">Authorize <span className="text-[#a3dcf3]">Login.</span></h1>
+        <h1 className="text-3xl font-black text-gray-900 mb-2 tracking-tighter uppercase italic">Authorize <span className="text-[#22c55e]">Login.</span></h1>
         <p className="text-sm text-gray-500 mb-8 font-medium">Access your institutional management portal.</p>
         
         {/* EMAIL VERIFICATION ALERT BOX */}
@@ -172,7 +172,7 @@ export default function LoginPage() {
               <input
                 type="email"
                 placeholder="name@company.com"
-                className="w-full border-2 border-gray-50 bg-gray-50/50 p-4 pl-12 rounded-2xl focus:border-[#a3dcf3] focus:bg-white outline-none transition-all font-medium text-sm text-black"
+                className="w-full border-2 border-gray-50 bg-gray-50/50 p-4 pl-12 rounded-2xl focus:border-[#22c55e] focus:bg-white outline-none transition-all font-medium text-sm text-black"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -187,7 +187,7 @@ export default function LoginPage() {
               <input
                 type="password"
                 placeholder="••••••••"
-                className="w-full border-2 border-gray-50 bg-gray-50/50 p-4 pl-12 rounded-2xl focus:border-[#a3dcf3] focus:bg-white outline-none transition-all font-medium text-sm text-black"
+                className="w-full border-2 border-gray-50 bg-gray-50/50 p-4 pl-12 rounded-2xl focus:border-[#22c55e] focus:bg-white outline-none transition-all font-medium text-sm text-black"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -215,7 +215,7 @@ export default function LoginPage() {
                 // Now leads back to public onboarding to select intent
                 router.push("/onboarding");
               }}
-              className="text-black hover:text-[#a3dcf3] transition-colors font-black"
+              className="text-black hover:text-[#22c55e] transition-colors font-black"
             >
               Sign Up
             </button>

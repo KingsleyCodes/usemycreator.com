@@ -178,7 +178,7 @@ export default function CreatorWallet() {
   );
 
   return (
-    <div className="min-h-screen bg-[#fafafa] pb-20 font-sans selection:bg-[#a3dcf3]">
+    <div className="min-h-screen bg-[#fafafa] pb-20 font-sans selection:bg-[#22c55e]">
       
       {/* WITHDRAWAL MODAL */}
       {showWithdrawModal && (
@@ -193,7 +193,7 @@ export default function CreatorWallet() {
 
             {withdrawalStep === 1 ? (
               <>
-                <h2 className="text-3xl font-black mb-2 tracking-tighter uppercase italic">Request <span className="text-[#a3dcf3]">Payout.</span></h2>
+                <h2 className="text-3xl font-black mb-2 tracking-tighter uppercase italic">Request <span className="text-[#22c55e]">Payout.</span></h2>
                 <p className="text-gray-400 text-[10px] font-black uppercase tracking-widest mb-8">Verified Settlement Terminal</p>
                 
                 <form onSubmit={handleWithdraw} className="space-y-4">
@@ -202,7 +202,7 @@ export default function CreatorWallet() {
                     <input 
                       type="number"
                       required
-                      className="w-full p-6 bg-gray-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-[#a3dcf3] font-black text-2xl transition-all"
+                      className="w-full p-6 bg-gray-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-[#22c55e] font-black text-2xl transition-all"
                       placeholder="0.00"
                       value={withdrawalAmount}
                       onChange={(e) => setWithdrawalAmount(e.target.value)}
@@ -238,7 +238,7 @@ export default function CreatorWallet() {
                   <button 
                     type="submit"
                     disabled={isWithdrawing || !bankDetails.accountNumber}
-                    className="w-full bg-black text-white py-6 rounded-[2rem] font-black text-[10px] uppercase tracking-[0.3em] hover:bg-[#a3dcf3] hover:text-black transition-all disabled:opacity-20 mt-4 shadow-xl flex items-center justify-center gap-2"
+                    className="w-full bg-black text-white py-6 rounded-[2rem] font-black text-[10px] uppercase tracking-[0.3em] hover:bg-[#22c55e] hover:text-black transition-all disabled:opacity-20 mt-4 shadow-xl flex items-center justify-center gap-2"
                   >
                     {isWithdrawing ? <Loader2 className="h-4 w-4 animate-spin" /> : "Confirm Withdrawal"}
                   </button>
@@ -255,7 +255,7 @@ export default function CreatorWallet() {
                 </p>
                 <button 
                   onClick={closeWithdrawalModal}
-                  className="mt-10 text-[10px] font-black uppercase underline tracking-[0.2em] hover:text-[#a3dcf3] transition-colors"
+                  className="mt-10 text-[10px] font-black uppercase underline tracking-[0.2em] hover:text-[#22c55e] transition-colors"
                 >
                   Return to Ledger
                 </button>
@@ -282,7 +282,7 @@ export default function CreatorWallet() {
         {/* BALANCE CARDS */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
           <div className="bg-black rounded-[3.5rem] p-12 text-white shadow-2xl relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-[#a3dcf3] opacity-5 rounded-full -mr-20 -mt-20 blur-3xl group-hover:opacity-10 transition-opacity" />
+            <div className="absolute top-0 right-0 w-64 h-64 bg-[#22c55e] opacity-5 rounded-full -mr-20 -mt-20 blur-3xl group-hover:opacity-10 transition-opacity" />
             <div className="relative z-10">
                 <div className="flex items-center gap-2 mb-4 opacity-50">
                     <Wallet className="h-4 w-4" />
@@ -293,14 +293,14 @@ export default function CreatorWallet() {
                 </h2>
                 <button 
                   onClick={() => setShowWithdrawModal(true)}
-                  className="w-full bg-[#a3dcf3] text-black py-5 rounded-[2.5rem] font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all flex items-center justify-center gap-2"
+                  className="w-full bg-[#22c55e] text-black py-5 rounded-[2.5rem] font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all flex items-center justify-center gap-2"
                 >
                   Withdrawal Terminal <ArrowUpRight className="h-4 w-4" />
                 </button>
             </div>
           </div>
 
-          <div className="bg-white border-2 border-gray-50 rounded-[3.5rem] p-12 flex flex-col justify-between group hover:border-[#a3dcf3]/30 transition-all">
+          <div className="bg-white border-2 border-gray-50 rounded-[3.5rem] p-12 flex flex-col justify-between group hover:border-[#22c55e]/30 transition-all">
             <div>
                 <div className="flex items-center gap-2 mb-4 opacity-50">
                     <Clock className="h-4 w-4" />

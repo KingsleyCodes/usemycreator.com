@@ -12,7 +12,7 @@ export default function BlogCard({ post }) {
   return (
     <article 
       onClick={() => router.push(`/blog/${post.slug}`)}
-      className="group cursor-pointer bg-white border border-gray-100 rounded-[2rem] overflow-hidden hover:shadow-2xl hover:shadow-[#a3dcf3]/10 transition-all duration-500 flex flex-col"
+      className="group cursor-pointer bg-white border border-gray-100 rounded-[2rem] overflow-hidden hover:shadow-2xl hover:shadow-[#22c55e]/10 transition-all duration-500 flex flex-col"
     >
       {/* Image Container */}
       <div className="relative h-64 overflow-hidden bg-gray-50">
@@ -42,7 +42,7 @@ export default function BlogCard({ post }) {
           </div>
         </div>
 
-        <h3 className="text-xl font-black text-gray-900 leading-tight mb-4 group-hover:text-[#a3dcf3] transition-colors uppercase">
+        <h3 className="text-xl font-black text-gray-900 leading-tight mb-4 group-hover:text-[#22c55e] transition-colors uppercase">
           {post.title}
         </h3>
 
@@ -52,7 +52,7 @@ export default function BlogCard({ post }) {
 
         <div className="mt-auto pt-6 border-t border-gray-50 flex items-center justify-between">
           <span className="text-xs font-black uppercase tracking-widest text-gray-900 flex items-center gap-2">
-            Read Intelligence <ArrowRight className="h-4 w-4 text-[#a3dcf3]" />
+            Read Intelligence <ArrowRight className="h-4 w-4 text-[#22c55e]" />
           </span>
         </div>
       </div>

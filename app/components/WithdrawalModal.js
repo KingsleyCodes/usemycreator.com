@@ -65,7 +65,7 @@ export default function WithdrawalModal({ isOpen, onClose, balance }) {
         {step === 1 ? (
           <form onSubmit={handleWithdrawal} className="space-y-5">
             <div>
-              <h2 className="text-2xl font-black uppercase italic tracking-tighter">Cash <span className="text-[#a3dcf3]">Out.</span></h2>
+              <h2 className="text-2xl font-black uppercase italic tracking-tighter">Cash <span className="text-[#22c55e]">Out.</span></h2>
               <p className="text-[10px] font-bold text-gray-400 uppercase mt-1">Available: ₦{balance.toLocaleString()}</p>
             </div>
 
@@ -74,7 +74,7 @@ export default function WithdrawalModal({ isOpen, onClose, balance }) {
                 type="number"
                 required
                 placeholder="Amount (₦)"
-                className="w-full p-4 bg-gray-50 rounded-xl font-bold outline-none focus:ring-2 focus:ring-[#a3dcf3]"
+                className="w-full p-4 bg-gray-50 rounded-xl font-bold outline-none focus:ring-2 focus:ring-[#22c55e]"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
               />
@@ -106,7 +106,7 @@ export default function WithdrawalModal({ isOpen, onClose, balance }) {
 
             <button
               disabled={isProcessing}
-              className="w-full bg-black text-white py-5 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-[#a3dcf3] hover:text-black transition-all flex items-center justify-center gap-2"
+              className="w-full bg-black text-white py-5 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-[#22c55e] hover:text-black transition-all flex items-center justify-center gap-2"
             >
               {isProcessing ? <Loader2 className="animate-spin h-4 w-4" /> : "Request Payout"}
             </button>

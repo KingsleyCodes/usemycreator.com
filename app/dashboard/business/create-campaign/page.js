@@ -163,7 +163,7 @@ export default function CreateCampaign() {
       {/* PROGRESS BAR */}
       <div className="w-full h-1 bg-gray-100">
         <div 
-          className="h-full bg-[#a3dcf3] transition-all duration-500" 
+          className="h-full bg-[#22c55e] transition-all duration-500" 
           style={{ width: `${(step / 2) * 100}%` }}
         />
       </div>
@@ -185,7 +185,7 @@ export default function CreateCampaign() {
                     <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-widest">Campaign Title</label>
                     <input
                       required
-                      className="w-full border border-gray-200 bg-white p-3 md:p-4 rounded-xl focus:border-[#a3dcf3] focus:ring-4 focus:ring-[#a3dcf3]/10 outline-none transition-all font-semibold text-sm"
+                      className="w-full border border-gray-200 bg-white p-3 md:p-4 rounded-xl focus:border-[#22c55e] focus:ring-4 focus:ring-[#22c55e]/10 outline-none transition-all font-semibold text-sm"
                       placeholder="e.g. Unboxing our new Skincare line"
                       value={formData.title}
                       onChange={(e) => setFormData({...formData, title: e.target.value})}
@@ -224,7 +224,7 @@ export default function CreateCampaign() {
                     <textarea
                       required
                       rows="5"
-                      className="w-full border border-gray-200 bg-white p-3 md:p-4 rounded-xl focus:border-[#a3dcf3] focus:ring-4 focus:ring-[#a3dcf3]/10 outline-none transition-all resize-none text-sm"
+                      className="w-full border border-gray-200 bg-white p-3 md:p-4 rounded-xl focus:border-[#22c55e] focus:ring-4 focus:ring-[#22c55e]/10 outline-none transition-all resize-none text-sm"
                       placeholder="Requirements, mentions, and key dates..."
                       value={formData.description}
                       onChange={(e) => setFormData({...formData, description: e.target.value})}
@@ -238,7 +238,7 @@ export default function CreateCampaign() {
                     onClick={nextStep}
                     className="w-full bg-black text-white py-4 rounded-full font-bold text-xs uppercase tracking-widest shadow-md hover:bg-gray-800 flex items-center justify-center gap-2"
                   >
-                    Next: Set Budget <ChevronRight className="h-3 w-3 text-[#a3dcf3]" />
+                    Next: Set Budget <ChevronRight className="h-3 w-3 text-[#22c55e]" />
                   </button>
                 </div>
               </div>
@@ -254,7 +254,7 @@ export default function CreateCampaign() {
                   <div>
                     <div className="flex justify-between items-end mb-1.5">
                         <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest">Budget (₦)</label>
-                        <div className="flex items-center gap-1.5 text-[10px] font-black text-[#a3dcf3] uppercase">
+                        <div className="flex items-center gap-1.5 text-[10px] font-black text-[#22c55e] uppercase">
                             <Target className="h-3 w-3" /> Target: {formData.targetViews.toLocaleString()} Views
                         </div>
                     </div>
@@ -263,7 +263,7 @@ export default function CreateCampaign() {
                       <input
                         required
                         type="number"
-                        className="w-full border border-gray-200 bg-white pl-10 pr-4 py-4 rounded-xl focus:border-[#a3dcf3] outline-none font-bold text-2xl"
+                        className="w-full border border-gray-200 bg-white pl-10 pr-4 py-4 rounded-xl focus:border-[#22c55e] outline-none font-bold text-2xl"
                         placeholder="0"
                         value={formData.budget}
                         onChange={(e) => setFormData({...formData, budget: e.target.value})}
@@ -284,7 +284,7 @@ export default function CreateCampaign() {
                       <button
                         type="button"
                         onClick={() => setFormData({...formData, milestones: 'upfront'})}
-                        className={`p-4 rounded-xl border transition-all text-left flex justify-between items-center ${formData.milestones === 'upfront' ? 'border-[#a3dcf3] bg-[#a3dcf3]/5 text-black' : 'border-gray-100 bg-gray-50 text-gray-400'}`}
+                        className={`p-4 rounded-xl border transition-all text-left flex justify-between items-center ${formData.milestones === 'upfront' ? 'border-[#22c55e] bg-[#22c55e]/5 text-black' : 'border-gray-100 bg-gray-50 text-gray-400'}`}
                       >
                         <div>
                           <p className="text-xs font-bold uppercase">100% Upfront</p>
@@ -295,7 +295,7 @@ export default function CreateCampaign() {
                       <button
                         type="button"
                         onClick={() => setFormData({...formData, milestones: 'split'})}
-                        className={`p-4 rounded-xl border transition-all text-left flex justify-between items-center ${formData.milestones === 'split' ? 'border-[#a3dcf3] bg-[#a3dcf3]/5 text-black' : 'border-gray-100 bg-gray-50 text-gray-400'}`}
+                        className={`p-4 rounded-xl border transition-all text-left flex justify-between items-center ${formData.milestones === 'split' ? 'border-[#22c55e] bg-[#22c55e]/5 text-black' : 'border-gray-100 bg-gray-50 text-gray-400'}`}
                       >
                         <div>
                           <p className="text-xs font-bold uppercase">50/50 Split</p>
@@ -321,7 +321,7 @@ export default function CreateCampaign() {
                     onClick={handleSubmit}
                     className="w-full bg-black text-white py-4 rounded-full font-bold text-xs uppercase tracking-widest shadow-lg flex items-center justify-center gap-3 disabled:opacity-50"
                   >
-                    {loading ? <Loader2 className="h-4 w-4 animate-spin text-[#a3dcf3]" /> : "Publish Campaign"}
+                    {loading ? <Loader2 className="h-4 w-4 animate-spin text-[#22c55e]" /> : "Publish Campaign"}
                   </button>
                   <button
                     type="button"

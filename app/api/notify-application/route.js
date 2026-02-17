@@ -13,7 +13,7 @@ export async function POST(req) {
       subject: `New Applicant: ${creatorName} wants to work with you! 🚀`,
       html: `
         <div style="font-family: sans-serif; max-width: 600px; padding: 20px; border: 1px solid #eee; border-radius: 20px;">
-          <h2 style="text-transform: uppercase; font-weight: 900;">New <span style="color: #a3dcf3;">Application</span></h2>
+          <h2 style="text-transform: uppercase; font-weight: 900;">New <span style="color: #22c55e;">Application</span></h2>
           <p>Hi ${businessName},</p>
           <p>Good news! <b>${creatorName}</b> has just applied to your campaign: <b>"${campaignTitle}"</b>.</p>
           

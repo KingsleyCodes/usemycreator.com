@@ -27,7 +27,7 @@ export default function HomePage() {
           {/* Growth Footer CTA - Transitioning back to dark */}
           <section className="bg-[#001E00] py-32 px-6 text-center rounded-t-[3rem] lg:rounded-t-[5rem]">
             <h2 className="text-4xl md:text-6xl font-serif text-white mb-8">
-              Ready to <span className="italic text-[#a3dcf3]">start growing?</span>
+              Ready to <span className="italic text-[#22c55e]">start growing?</span>
             </h2>
             <button 
               onClick={() => window.location.href = '/login'}

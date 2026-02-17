@@ -17,7 +17,7 @@ const CreatorNetwork = () => {
       
       {/* BACKGROUND DEPTH */}
       <div className="absolute inset-0 z-0">
-        <div className="absolute top-0 left-0 w-full h-[500px] bg-[radial-gradient(circle_at_20%_-10%,#a3dcf310,transparent_50%)]" />
+        <div className="absolute top-0 left-0 w-full h-[500px] bg-[radial-gradient(circle_at_20%_-10%,#22c55e10,transparent_50%)]" />
         <div className="absolute inset-0 opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
       </div>
 

@@ -95,7 +95,7 @@ export default function CreatorProfile() {
       {/* Navigation */}
       <nav className="bg-white border-b border-gray-100 p-6 flex justify-between items-center sticky top-0 z-50">
         <span className="font-black tracking-tighter text-xl cursor-pointer" onClick={() => router.push("/dashboard/creator")}>
-          MYCREATOR<span className="text-[#a3dcf3]">.</span>IO
+          MYCREATOR<span className="text-[#22c55e]">.</span>IO
         </span>
         <button onClick={() => router.push("/dashboard/creator")} className="text-sm font-bold text-gray-400 hover:text-black transition-colors">
           Exit to Feed
@@ -116,7 +116,7 @@ export default function CreatorProfile() {
                 <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Display Name</label>
                 <input
                   required
-                  className="w-full border-2 border-gray-100 p-4 rounded-2xl focus:border-[#a3dcf3] outline-none transition-all font-bold"
+                  className="w-full border-2 border-gray-100 p-4 rounded-2xl focus:border-[#22c55e] outline-none transition-all font-bold"
                   value={profile.name}
                   onChange={(e) => setProfile({ ...profile, name: e.target.value })}
                 />
@@ -126,7 +126,7 @@ export default function CreatorProfile() {
                 <textarea
                   required
                   rows="3"
-                  className="w-full border-2 border-gray-100 p-4 rounded-2xl focus:border-[#a3dcf3] outline-none transition-all resize-none font-medium text-gray-600"
+                  className="w-full border-2 border-gray-100 p-4 rounded-2xl focus:border-[#22c55e] outline-none transition-all resize-none font-medium text-gray-600"
                   value={profile.bio}
                   onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
                 />
@@ -160,12 +160,12 @@ export default function CreatorProfile() {
                 <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Platform Profile Links</label>
                 {profile.platforms.map((p) => (
                   <div key={p} className="flex flex-col">
-                    <span className="text-[10px] font-black text-[#a3dcf3] uppercase mb-1">{p} URL</span>
+                    <span className="text-[10px] font-black text-[#22c55e] uppercase mb-1">{p} URL</span>
                     <input
                       required
                       type="url"
                       placeholder={`https://${p.toLowerCase()}.com/yourname`}
-                      className="w-full border-2 border-gray-100 p-4 rounded-2xl focus:border-[#a3dcf3] outline-none transition-all text-sm"
+                      className="w-full border-2 border-gray-100 p-4 rounded-2xl focus:border-[#22c55e] outline-none transition-all text-sm"
                       value={profile.socialLinks[p] || ""}
                       onChange={(e) => handleLinkChange(p, e.target.value)}
                     />
@@ -177,7 +177,7 @@ export default function CreatorProfile() {
             <button
               type="submit"
               disabled={saving || profile.platforms.length === 0}
-              className="w-full bg-[#a3dcf3] hover:bg-[#8ccce6] text-black py-5 rounded-3xl font-black text-xl shadow-xl transition-all active:scale-95 disabled:opacity-50"
+              className="w-full bg-[#22c55e] hover:bg-[#8ccce6] text-black py-5 rounded-3xl font-black text-xl shadow-xl transition-all active:scale-95 disabled:opacity-50"
             >
               {saving ? "Saving..." : "Update Profile"}
             </button>

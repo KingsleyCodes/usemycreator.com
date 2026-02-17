@@ -18,7 +18,7 @@ export default function MarketSentiment({ offerAmount, targetViews, niche }) {
     } else if (ratio >= 0.5 && ratio < 0.9) {
       setSentiment({ label: 'Fair - Budget Friendly', color: 'bg-yellow-500', width: '50%', text: 'text-yellow-700' });
     } else if (ratio >= 0.9 && ratio < 1.3) {
-      setSentiment({ label: 'Great - Competitive', color: 'bg-[#a3dcf3]', width: '80%', text: 'text-[#a3dcf3]' });
+      setSentiment({ label: 'Great - Competitive', color: 'bg-[#22c55e]', width: '80%', text: 'text-[#22c55e]' });
     } else {
       setSentiment({ label: 'Elite - Top Priority', color: 'bg-emerald-500', width: '100%', text: 'text-emerald-600' });
     }

@@ -100,7 +100,7 @@ export default function CreatorNavbar({ creatorName, balance = 0, pendingEarning
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider leading-none">Balance</p>
                     <p className="text-sm font-bold text-white">₦{balance.toLocaleString()}</p>
                   </div>
-                  <ArrowUpRight className="h-3 w-3 text-[#a3dcf3]" />
+                  <ArrowUpRight className="h-3 w-3 text-[#22c55e]" />
                 </div>
               </div>
 
@@ -167,11 +167,11 @@ export default function CreatorNavbar({ creatorName, balance = 0, pendingEarning
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Available to Withdraw</p>
                     <h3 className="text-2xl font-bold">₦{balance.toLocaleString()}</h3>
                   </div>
-                  <Sparkles className="h-5 w-5 text-[#a3dcf3]" />
+                  <Sparkles className="h-5 w-5 text-[#22c55e]" />
                 </div>
                 <button 
                   onClick={() => { router.push('/dashboard/creator/wallet'); setIsMobileMenuOpen(false); }}
-                  className="w-full py-3 bg-[#a3dcf3] text-black rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-white transition-colors"
+                  className="w-full py-3 bg-[#22c55e] text-black rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-white transition-colors"
                 >
                   Withdraw Funds
                 </button>

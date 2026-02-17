@@ -28,10 +28,10 @@ const SolutionsPage = () => {
       
       {/* --- BRANDED BACKGROUND --- */}
       <div className="absolute inset-0 z-0">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(circle_at_50%_-10%,#a3dcf310,transparent_60%)]" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(circle_at_50%_-10%,#22c55e10,transparent_60%)]" />
         {/* Subtle grid to maintain the "infrastructure" feel */}
         <div className="absolute inset-0 opacity-[0.05]" 
-             style={{ backgroundImage: `linear-gradient(to right, #a3dcf3 1px, transparent 1px), linear-gradient(to bottom, #a3dcf3 1px, transparent 1px)`, backgroundSize: '50px 50px' }} />
+             style={{ backgroundImage: `linear-gradient(to right, #22c55e 1px, transparent 1px), linear-gradient(to bottom, #22c55e 1px, transparent 1px)`, backgroundSize: '50px 50px' }} />
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto">

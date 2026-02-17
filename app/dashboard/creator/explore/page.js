@@ -119,9 +119,9 @@ export default function ExplorePage() {
 
             <div className="bg-black p-8 rounded-[2.5rem] text-white flex flex-col justify-between">
                 <div>
-                  <Zap className="h-6 w-6 text-[#a3dcf3] mb-4" />
+                  <Zap className="h-6 w-6 text-[#22c55e] mb-4" />
                   <p className="text-[9px] font-black uppercase tracking-widest text-white/40 mb-1">Active Opportunities</p>
-                  <h3 className="text-4xl font-black text-[#a3dcf3]">{marketStats.totalActive}</h3>
+                  <h3 className="text-4xl font-black text-[#22c55e]">{marketStats.totalActive}</h3>
                 </div>
                 <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest mt-4">Live Briefs found</p>
             </div>

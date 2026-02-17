@@ -58,7 +58,7 @@ export default async function BlogPage() {
 
       <section className="bg-white border-b border-gray-100 pt-32 pb-20">
         <div className="max-w-[1400px] mx-auto px-4 text-center">
-          <span className="text-[#a3dcf3] font-black uppercase tracking-[0.3em] text-[10px] mb-4 block">
+          <span className="text-[#22c55e] font-black uppercase tracking-[0.3em] text-[10px] mb-4 block">
             Institutional Insights
           </span>
           <h1 className="text-4xl md:text-6xl font-black text-gray-900 tracking-tighter mb-6 uppercase">

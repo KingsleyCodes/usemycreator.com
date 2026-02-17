@@ -50,7 +50,7 @@ export default function AdminPayouts() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div>
             <h1 className="text-4xl font-black uppercase italic tracking-tighter">
-              Treasury <span className="text-[#a3dcf3]">Settlement.</span>
+              Treasury <span className="text-[#22c55e]">Settlement.</span>
             </h1>
           </div>
 
@@ -86,7 +86,7 @@ export default function AdminPayouts() {
                 
                 {/* CREATOR & AMOUNT */}
                 <div className="flex items-center gap-6 flex-1">
-                  <div className="h-16 w-16 bg-black rounded-2xl flex items-center justify-center text-[#a3dcf3] font-black text-xl shadow-lg shadow-black/10">
+                  <div className="h-16 w-16 bg-black rounded-2xl flex items-center justify-center text-[#22c55e] font-black text-xl shadow-lg shadow-black/10">
                     {p.creatorName?.[0] || "C"}
                   </div>
                   <div>
@@ -101,7 +101,7 @@ export default function AdminPayouts() {
                 </div>
 
                 {/* BANK DETAILS BOX (Your Style) */}
-                <div className="bg-gray-50 rounded-[2rem] p-6 flex-1 w-full lg:w-auto border border-transparent group-hover:border-[#a3dcf3]/30 transition-all">
+                <div className="bg-gray-50 rounded-[2rem] p-6 flex-1 w-full lg:w-auto border border-transparent group-hover:border-[#22c55e]/30 transition-all">
                    <p className="text-[9px] font-black uppercase text-gray-400 mb-3 tracking-widest">Settlement Destination</p>
                    <div className="space-y-1">
                       <p className="text-sm font-black uppercase tracking-tight">{p.bankName || p.bankDetails?.bankName}</p>
@@ -115,7 +115,7 @@ export default function AdminPayouts() {
                   {p.status === "pending" ? (
                     <button 
                       onClick={() => markAsPaid(p.id)}
-                      className="w-full lg:w-auto bg-black text-white px-10 py-5 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-[#a3dcf3] hover:text-black transition-all shadow-xl shadow-black/5 flex items-center justify-center gap-2"
+                      className="w-full lg:w-auto bg-black text-white px-10 py-5 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-[#22c55e] hover:text-black transition-all shadow-xl shadow-black/5 flex items-center justify-center gap-2"
                     >
                       <Banknote className="h-4 w-4" /> Confirm Manual Transfer
                     </button>
@@ -141,7 +141,7 @@ export default function AdminPayouts() {
           <div className="w-px h-8 bg-white/10" />
           <div>
             <p className="text-[8px] font-black text-gray-500 uppercase tracking-widest">Liability</p>
-            <p className="font-black text-xl text-[#a3dcf3]">₦{filteredPayouts.reduce((acc, p) => acc + (p.amount || 0), 0).toLocaleString()}</p>
+            <p className="font-black text-xl text-[#22c55e]">₦{filteredPayouts.reduce((acc, p) => acc + (p.amount || 0), 0).toLocaleString()}</p>
           </div>
       </footer>
     </div>

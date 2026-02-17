@@ -98,7 +98,7 @@ export default function ReviewSubmissionModal({ campaign, isOpen, onClose }) {
         </button>
 
         <div className="mb-10">
-          <h2 className="text-3xl font-black uppercase italic tracking-tighter">Review <span className="text-[#a3dcf3]">Deliverables.</span></h2>
+          <h2 className="text-3xl font-black uppercase italic tracking-tighter">Review <span className="text-[#22c55e]">Deliverables.</span></h2>
           <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-2">Campaign ID: {campaign.id}</p>
         </div>
 
@@ -111,7 +111,7 @@ export default function ReviewSubmissionModal({ campaign, isOpen, onClose }) {
                 href={link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-between p-5 bg-gray-50 rounded-2xl hover:bg-[#a3dcf3]/10 transition-all border border-transparent hover:border-[#a3dcf3]"
+                className="flex items-center justify-between p-5 bg-gray-50 rounded-2xl hover:bg-[#22c55e]/10 transition-all border border-transparent hover:border-[#22c55e]"
               >
                 <span className="text-sm font-bold text-gray-900 truncate pr-4">{link}</span>
                 <ExternalLink className="h-4 w-4 text-gray-400 shrink-0" />

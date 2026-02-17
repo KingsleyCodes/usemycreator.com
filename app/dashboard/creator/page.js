@@ -207,7 +207,7 @@ export default function CreatorDashboard() {
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-white">
-        <Loader2 className="h-10 w-10 animate-spin text-[#a3dcf3] mb-4" />
+        <Loader2 className="h-10 w-10 animate-spin text-[#22c55e] mb-4" />
         <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Loading Studio...</p>
       </div>
     );
@@ -233,7 +233,7 @@ export default function CreatorDashboard() {
                 </h1>
             </div>
             <div className="flex items-center gap-4 bg-white p-4 rounded-2xl border border-gray-200 shadow-sm">
-                <div className="h-10 w-10 bg-[#a3dcf3]/20 rounded-full flex items-center justify-center">
+                <div className="h-10 w-10 bg-[#22c55e]/20 rounded-full flex items-center justify-center">
                     <ShieldCheck className="h-5 w-5 text-black" />
                 </div>
                 <div>
@@ -248,7 +248,7 @@ export default function CreatorDashboard() {
         <div className="mb-12">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-xs font-black uppercase tracking-[0.2em] text-gray-900 flex items-center gap-2">
-                <MessageSquare className="h-4 w-4 text-[#a3dcf3]" /> Active Channels
+                <MessageSquare className="h-4 w-4 text-[#22c55e]" /> Active Channels
             </h3>
             <button onClick={() => router.push('/dashboard/messages')} className="text-[10px] font-bold text-gray-400 uppercase hover:text-black transition-colors">View All Messages</button>
           </div>
@@ -259,17 +259,17 @@ export default function CreatorDashboard() {
                 <div 
                   key={chat.id} 
                   onClick={() => router.push(`/dashboard/chat/${chat.id}`)}
-                  className="bg-white border border-gray-200 rounded-2xl p-5 hover:border-[#a3dcf3] transition-all cursor-pointer group shadow-sm hover:shadow-md"
+                  className="bg-white border border-gray-200 rounded-2xl p-5 hover:border-[#22c55e] transition-all cursor-pointer group shadow-sm hover:shadow-md"
                 >
                   <div className="flex items-center gap-4 mb-4">
-                    <div className="h-10 w-10 rounded-full bg-black flex items-center justify-center text-[#a3dcf3] font-bold text-xs">
+                    <div className="h-10 w-10 rounded-full bg-black flex items-center justify-center text-[#22c55e] font-bold text-xs">
                       {chat.businessName?.[0]}
                     </div>
                     <div className="flex-1 min-w-0">
                       <h4 className="font-bold text-gray-900 truncate text-sm">{chat.businessName}</h4>
                       <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Direct Message</p>
                     </div>
-                    <ChevronRight className="h-4 w-4 text-gray-200 group-hover:text-[#a3dcf3] transition-colors" />
+                    <ChevronRight className="h-4 w-4 text-gray-200 group-hover:text-[#22c55e] transition-colors" />
                   </div>
                   <div className="bg-[#F9FAFB] p-3 rounded-xl border border-gray-100">
                       <p className="text-[11px] text-gray-600 line-clamp-1 italic">"{chat.lastMessage || "Start the conversation..."}"</p>
@@ -333,7 +333,7 @@ export default function CreatorDashboard() {
                                     </div>
                                 )}
                                 {isAssignedToMe && (
-                                    <div className="bg-[#a3dcf3]/20 text-black border border-[#a3dcf3]/30 text-[10px] font-black px-3 py-1 rounded-full uppercase italic">
+                                    <div className="bg-[#22c55e]/20 text-black border border-[#22c55e]/30 text-[10px] font-black px-3 py-1 rounded-full uppercase italic">
                                         Your Project
                                     </div>
                                 )}
@@ -366,7 +366,7 @@ export default function CreatorDashboard() {
                                                   setActiveCampaignForSubmission(c);
                                                   setIsSubmitModalOpen(true);
                                               }}
-                                              className="w-full sm:w-auto bg-black text-[#a3dcf3] px-8 py-3.5 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-gray-800 transition-all flex items-center justify-center gap-2 shadow-xl shadow-[#a3dcf3]/5"
+                                              className="w-full sm:w-auto bg-black text-[#22c55e] px-8 py-3.5 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-gray-800 transition-all flex items-center justify-center gap-2 shadow-xl shadow-[#22c55e]/5"
                                           >
                                               Submit Proof <Send className="h-3 w-3" />
                                           </button>
@@ -435,9 +435,9 @@ export default function CreatorDashboard() {
             
             <div className="bg-black text-white rounded-2xl p-6 shadow-xl relative overflow-hidden group">
                 <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:rotate-12 transition-transform">
-                  <Sparkles className="h-12 w-12 text-[#a3dcf3]" />
+                  <Sparkles className="h-12 w-12 text-[#22c55e]" />
                 </div>
-                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-[#a3dcf3] mb-3">Pro Tip</p>
+                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-[#22c55e] mb-3">Pro Tip</p>
                 <p className="text-xs font-medium leading-relaxed text-gray-300 relative z-10">
                   Brands are 4x more likely to accept proposals that mention specific ideas for their campaign platform.
                 </p>

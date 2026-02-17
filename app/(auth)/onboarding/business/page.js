@@ -46,7 +46,7 @@ export default function BusinessDashboard() {
     return (
       <div className="flex flex-col items-center justify-center h-screen text-center">
         <h1 className="text-2xl font-bold mb-4">Complete your business profile first</h1>
-        <button onClick={() => router.push("/dashboard/business/setup")} className="bg-[#a3dcf3] px-6 py-3 rounded-xl font-bold">
+        <button onClick={() => router.push("/dashboard/business/setup")} className="bg-[#22c55e] px-6 py-3 rounded-xl font-bold">
           Setup Profile
         </button>
       </div>

@@ -24,7 +24,7 @@ export async function POST(req) {
       subject: subject,
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: auto;">
-          <h1 style="font-style: italic; font-weight: 900; text-transform: uppercase;">UseMy<span style="color: #a3dcf3;">Creator.</span></h1>
+          <h1 style="font-style: italic; font-weight: 900; text-transform: uppercase;">UseMy<span style="color: #22c55e;">Creator.</span></h1>
           <p>Hi ${name},</p>
           <p>${isCreator 
             ? "You’ve just joined the safest ecosystem for content creators in Nigeria." 

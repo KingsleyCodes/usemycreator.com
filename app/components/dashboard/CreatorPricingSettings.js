@@ -36,7 +36,7 @@ export default function CreatorPricingSettings({ initialData, onSave }) {
                 type="number" 
                 value={views}
                 onChange={(e) => setViews(Number(e.target.value))}
-                className="w-full bg-gray-50 border-none rounded-2xl p-5 text-xl font-bold focus:ring-2 focus:ring-[#a3dcf3] transition-all"
+                className="w-full bg-gray-50 border-none rounded-2xl p-5 text-xl font-bold focus:ring-2 focus:ring-[#22c55e] transition-all"
                 placeholder="e.g. 5000"
               />
               <span className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-300 font-bold">Views</span>
@@ -55,7 +55,7 @@ export default function CreatorPricingSettings({ initialData, onSave }) {
                   onClick={() => setNiche(n.id)}
                   className={`flex items-center gap-2 p-3 rounded-xl border-2 transition-all text-left ${
                     niche === n.id 
-                      ? 'border-[#a3dcf3] bg-[#a3dcf3]/5 text-[#001E00]' 
+                      ? 'border-[#22c55e] bg-[#22c55e]/5 text-[#001E00]' 
                       : 'border-transparent bg-gray-50 text-gray-500 hover:bg-gray-100'
                   }`}
                 >
@@ -71,9 +71,9 @@ export default function CreatorPricingSettings({ initialData, onSave }) {
         <div className="flex flex-col justify-between">
           <div className="bg-[#001E00] rounded-[2.5rem] p-8 text-center flex-grow flex flex-col justify-center items-center relative overflow-hidden">
             {/* Subtle glow effect */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-[#a3dcf3]/10 blur-[50px] rounded-full" />
+            <div className="absolute top-0 right-0 w-32 h-32 bg-[#22c55e]/10 blur-[50px] rounded-full" />
             
-            <span className="relative z-10 text-[10px] font-black uppercase tracking-[0.3em] text-[#a3dcf3]">
+            <span className="relative z-10 text-[10px] font-black uppercase tracking-[0.3em] text-[#22c55e]">
               Suggested Creator Fee
             </span>
             <div className="relative z-10 text-5xl font-serif text-white mt-4 mb-4">
@@ -90,7 +90,7 @@ export default function CreatorPricingSettings({ initialData, onSave }) {
 
           <button 
             onClick={() => onSave({ avgViews: views, niche, baseRate: suggestedRate })}
-            className="w-full mt-6 bg-[#a3dcf3] text-[#001E00] py-5 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-white transition-all shadow-md active:scale-[0.98]"
+            className="w-full mt-6 bg-[#22c55e] text-[#001E00] py-5 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-white transition-all shadow-md active:scale-[0.98]"
           >
             Apply to Profile
           </button>

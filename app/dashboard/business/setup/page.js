@@ -113,7 +113,7 @@ export default function BusinessSetup() {
           <div>
             <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 block mb-2 px-1">Identity</label>
             <input
-              className="w-full border-2 border-gray-50 bg-gray-50/50 p-4 rounded-2xl focus:border-[#a3dcf3] focus:bg-white outline-none font-bold text-sm transition-all"
+              className="w-full border-2 border-gray-50 bg-gray-50/50 p-4 rounded-2xl focus:border-[#22c55e] focus:bg-white outline-none font-bold text-sm transition-all"
               placeholder="Company Name"
               value={companyName}
               onChange={(e) => setCompanyName(e.target.value)}
@@ -124,7 +124,7 @@ export default function BusinessSetup() {
           <div>
             <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 block mb-2 px-1">Niche</label>
             <input
-              className="w-full border-2 border-gray-50 bg-gray-50/50 p-4 rounded-2xl focus:border-[#a3dcf3] focus:bg-white outline-none font-bold text-sm transition-all"
+              className="w-full border-2 border-gray-50 bg-gray-50/50 p-4 rounded-2xl focus:border-[#22c55e] focus:bg-white outline-none font-bold text-sm transition-all"
               placeholder="Industry (e.g. Fashion, Tech)"
               value={industry}
               onChange={(e) => setIndustry(e.target.value)}
@@ -135,7 +135,7 @@ export default function BusinessSetup() {
           <div>
             <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 block mb-2 px-1">Brief Description</label>
             <textarea
-              className="w-full border-2 border-gray-50 bg-gray-50/50 p-4 rounded-2xl focus:border-[#a3dcf3] focus:bg-white outline-none resize-none font-medium text-sm transition-all"
+              className="w-full border-2 border-gray-50 bg-gray-50/50 p-4 rounded-2xl focus:border-[#22c55e] focus:bg-white outline-none resize-none font-medium text-sm transition-all"
               placeholder="What does your company do?"
               rows="4"
               value={description}
@@ -148,7 +148,7 @@ export default function BusinessSetup() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#a3dcf3] text-black py-5 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl hover:shadow-2xl hover:bg-[#8bcce6] transition-all transform active:scale-95 disabled:opacity-50"
+              className="w-full bg-[#22c55e] text-black py-5 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl hover:shadow-2xl hover:bg-[#8bcce6] transition-all transform active:scale-95 disabled:opacity-50"
             >
               {loading ? "Initializing Deployment..." : "Complete Setup"}
             </button>

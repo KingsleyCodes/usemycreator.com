@@ -8,7 +8,7 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: "#a3dcf3",
+        primary: "#22c55e",
       },
       // Adding the world-class motion engine
       animation: {

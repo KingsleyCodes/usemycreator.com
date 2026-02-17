@@ -124,8 +124,8 @@ export default function RegisterPage() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-[#fcfcfc] px-4">
         <div className="max-w-md w-full bg-white p-10 rounded-[2.5rem] shadow-2xl border border-gray-100 text-center animate-in fade-in zoom-in duration-500">
-          <div className="h-20 w-20 bg-[#a3dcf3]/10 rounded-3xl flex items-center justify-center mx-auto mb-6">
-            <Mail className="h-10 w-10 text-[#a3dcf3]" />
+          <div className="h-20 w-20 bg-[#22c55e]/10 rounded-3xl flex items-center justify-center mx-auto mb-6">
+            <Mail className="h-10 w-10 text-[#22c55e]" />
           </div>
           <h1 className="text-3xl font-black text-gray-900 mb-4 tracking-tighter uppercase">Verify Your Identity</h1>
           <p className="text-sm text-gray-500 mb-8 font-medium leading-relaxed">
@@ -153,7 +153,7 @@ export default function RegisterPage() {
         onClick={() => router.push("/")}
       >
         <div className="h-8 w-8 bg-black rounded flex items-center justify-center transition-transform group-hover:scale-110">
-          <Sparkles className="h-4 w-4 text-[#a3dcf3]" />
+          <Sparkles className="h-4 w-4 text-[#22c55e]" />
         </div>
         <span className="text-sm font-black tracking-tighter text-gray-900 uppercase">
           MYCREATOR<span className="text-gray-400">.STUDIO</span>
@@ -180,7 +180,7 @@ export default function RegisterPage() {
               <input
                 type="text"
                 placeholder="John Doe"
-                className="w-full border-2 border-gray-50 bg-gray-50/50 p-4 pl-12 rounded-2xl focus:border-[#a3dcf3] focus:bg-white outline-none transition-all font-medium text-sm text-black"
+                className="w-full border-2 border-gray-50 bg-gray-50/50 p-4 pl-12 rounded-2xl focus:border-[#22c55e] focus:bg-white outline-none transition-all font-medium text-sm text-black"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 required
@@ -196,7 +196,7 @@ export default function RegisterPage() {
               <input
                 type="email"
                 placeholder="name@company.com"
-                className="w-full border-2 border-gray-50 bg-gray-50/50 p-4 pl-12 rounded-2xl focus:border-[#a3dcf3] focus:bg-white outline-none transition-all font-medium text-sm text-black"
+                className="w-full border-2 border-gray-50 bg-gray-50/50 p-4 pl-12 rounded-2xl focus:border-[#22c55e] focus:bg-white outline-none transition-all font-medium text-sm text-black"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -212,7 +212,7 @@ export default function RegisterPage() {
               <input
                 type="password"
                 placeholder="••••••••"
-                className="w-full border-2 border-gray-50 bg-gray-50/50 p-4 pl-12 rounded-2xl focus:border-[#a3dcf3] focus:bg-white outline-none transition-all font-medium text-sm text-black"
+                className="w-full border-2 border-gray-50 bg-gray-50/50 p-4 pl-12 rounded-2xl focus:border-[#22c55e] focus:bg-white outline-none transition-all font-medium text-sm text-black"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -238,7 +238,7 @@ export default function RegisterPage() {
                 fbq.event('Contact', { content_name: 'Register Page Switch to Login' });
                 router.push("/login");
               }}
-              className="text-black hover:text-[#a3dcf3] transition-colors font-black"
+              className="text-black hover:text-[#22c55e] transition-colors font-black"
             >
               Login
             </button>

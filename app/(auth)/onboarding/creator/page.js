@@ -74,7 +74,7 @@ export default function CreatorDashboard() {
           </p>
           <button 
             onClick={() => router.push("/dashboard/creator/setup")}
-            className="w-full bg-[#a3dcf3] py-4 rounded-2xl font-bold text-xl hover:shadow-lg transition-all"
+            className="w-full bg-[#22c55e] py-4 rounded-2xl font-bold text-xl hover:shadow-lg transition-all"
           >
             Create My Profile
           </button>

@@ -19,38 +19,16 @@ export default function ProtectedRoute({ children, allowedRole }) {
         return;
       }
 
-      // ==========================================================
-      // NEW SECURITY LAYER: EMAIL VERIFICATION
-      // ==========================================================
-      // We force a reload to get the freshest status from Firebase servers
       try {
-        await user.reload(); 
-        if (!user.emailVerified) {
-          if (isMounted) {
-            // We sign them out so they can't bypass via state manipulation
-            await signOut(auth);
-            router.push("/login?error=unverified");
-          }
-          return;
-        }
-      } catch (reloadError) {
-        console.error("User reload error:", reloadError);
-        if (isMounted) router.push("/login");
-        return;
-      }
-      // ==========================================================
-
-      try {
-        // 1. Determine which collection to check based on allowedRole
-        // This makes the component work for /dashboard/creator, /dashboard/business, and /dashboard/admin
-        let collectionName = "users"; // fallback
+        // 1. Determine which collection to check
+        let collectionName = "users"; 
         if (allowedRole === "creator") collectionName = "creators";
         if (allowedRole === "business") collectionName = "businesses";
         if (allowedRole === "admin") collectionName = "admins";
 
         const snap = await getDoc(doc(db, collectionName, user.uid));
 
-        // 2. Security: If the document doesn't exist in the REQUIRED collection
+        // 2. Security: Check if document exists
         if (!snap.exists()) {
           console.error(`User does not exist in the ${collectionName} collection.`);
           if (isMounted) router.push("/login");
@@ -59,7 +37,37 @@ export default function ProtectedRoute({ children, allowedRole }) {
 
         const userData = snap.data();
 
-        // 3. ⛔ THE BAN CHECK (Critical for the Admin Ban Feature)
+        // ==========================================================
+        // SECURITY LAYER: EMAIL VERIFICATION (With Admin Bypass)
+        // ==========================================================
+        const isVerifiedInDb = userData.emailVerified === true;
+        const isAdmin = allowedRole === "admin";
+
+        // Only enforce the strict Firebase reload for non-admins 
+        // who aren't already marked verified in our database.
+        if (!isAdmin && !isVerifiedInDb) {
+          try {
+            await user.reload(); 
+            if (!user.emailVerified) {
+              if (isMounted) {
+                await signOut(auth);
+                router.push("/login?error=unverified");
+              }
+              return;
+            }
+          } catch (reloadError) {
+            console.error("User reload error:", reloadError);
+            // If the client blocks the reload (ERR_BLOCKED_BY_CLIENT), 
+            // we only kick them out if they aren't verified in Firestore either.
+            if (!isVerifiedInDb) {
+              if (isMounted) router.push("/login");
+              return;
+            }
+          }
+        }
+        // ==========================================================
+
+        // 3. ⛔ THE BAN CHECK
         if (userData.isBanned) {
           await signOut(auth);
           if (isMounted) {
@@ -70,7 +78,6 @@ export default function ProtectedRoute({ children, allowedRole }) {
         }
 
         // 4. Role Authorization
-        // Note: For 'admins', we usually don't have a role field, the existence in the collection is enough
         if (allowedRole !== "admin") {
           const role = userData.role;
           if (!role) {

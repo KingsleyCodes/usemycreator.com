@@ -45,24 +45,39 @@ export default function LoginPage() {
       await user.reload();
 
       // ==========================================================
-      // EMAIL VERIFICATION GATE
+      // PRE-FETCH DATA FOR VERIFICATION OVERRIDE
       // ==========================================================
-      if (!user.emailVerified) {
-        setVerificationError(true);
-        setLoading(false);
-        // We do not signOut yet so the user can click 'Resend' 
-        return;
-      }
-
-      // 1. CHECK FOR ADMIN (Your Owner Account)
       const adminDoc = await getDoc(doc(db, "admins", user.uid));
+      const creatorDoc = await getDoc(doc(db, "creators", user.uid));
+      const businessDoc = await getDoc(doc(db, "businesses", user.uid));
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+
+      // Check if any of these documents have the manual 'emailVerified: true' flag
+      const isManuallyVerified = 
+        adminDoc.data()?.emailVerified === true || 
+        creatorDoc.data()?.emailVerified === true || 
+        businessDoc.data()?.emailVerified === true || 
+        userDoc.data()?.emailVerified === true;
+
+      // ==========================================================
+      // 1. CHECK FOR ADMIN (Your Owner Account) FIRST
+      // ==========================================================
       if (adminDoc.exists()) {
         router.push("/dashboard/admin");
         return;
       }
 
-      // 2. CHECK FOR CREATOR
-      const creatorDoc = await getDoc(doc(db, "creators", user.uid));
+      // ==========================================================
+      // 2. EMAIL VERIFICATION GATE (FOR NON-ADMINS)
+      // Logic: Allow if Firebase verified OR if manually verified in Firestore
+      // ==========================================================
+      if (!user.emailVerified && !isManuallyVerified) {
+        setVerificationError(true);
+        setLoading(false);
+        return;
+      }
+
+      // 3. CHECK FOR CREATOR
       if (creatorDoc.exists()) {
         const data = creatorDoc.data();
         if (data.isBanned) {
@@ -72,14 +87,12 @@ export default function LoginPage() {
           return;
         }
         
-        // Track successful login/return
         fbq.event('CompleteRegistration', { content_name: 'Creator Login Success' });
         router.push("/dashboard/creator");
         return;
       }
 
-      // 3. CHECK FOR BUSINESS
-      const businessDoc = await getDoc(doc(db, "businesses", user.uid));
+      // 4. CHECK FOR BUSINESS
       if (businessDoc.exists()) {
         const data = businessDoc.data();
         if (data.isBanned) {
@@ -89,25 +102,21 @@ export default function LoginPage() {
           return;
         }
 
-        // Track successful login/return
         fbq.event('CompleteRegistration', { content_name: 'Business Login Success' });
         router.push("/dashboard/business");
         return;
       }
 
-      // 4. GENERAL FALLBACK (Check the 'users' collection)
-      const userDoc = await getDoc(doc(db, "users", user.uid));
+      // 5. GENERAL FALLBACK (Check the 'users' collection)
       if (userDoc.exists()) {
         const data = userDoc.data();
         fbq.event('CompleteRegistration', { content_name: 'User Login Success', role: data.role });
         
-        // Dynamic reroute based on role stored during registration
         if (data.role === "business") {
           router.push("/dashboard/business");
         } else if (data.role === "creator") {
           router.push("/dashboard/creator");
         } else {
-          // If no role found (shouldn't happen with our new flow), send to public onboarding
           router.push("/onboarding");
         }
       } else {
@@ -212,7 +221,6 @@ export default function LoginPage() {
               onClick={(e) => {
                 e.preventDefault();
                 fbq.event('Contact', { content_name: 'Login Page Switch to Register' });
-                // Now leads back to public onboarding to select intent
                 router.push("/onboarding");
               }}
               className="text-black hover:text-[#22c55e] transition-colors font-black"

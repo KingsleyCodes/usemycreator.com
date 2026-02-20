@@ -3,12 +3,14 @@
 import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
 import { collection, getDocs, doc, updateDoc, query, where } from "firebase/firestore";
-import { CheckCircle, XCircle, User, Business, Sparkles, ShieldCheck, Search } from "lucide-react";
+import { CheckCircle, XCircle, User, Business, Sparkles, ShieldCheck, Search, Star, Tag } from "lucide-react";
 
 export default function VerificationManager() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+
+  const niches = ["Lifestyle", "Tech", "Fashion", "Beauty", "Fitness", "Gaming", "Food"];
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -45,8 +47,6 @@ export default function VerificationManager() {
         emailVerified: true,
       });
       
-      // Update local state to show change immediately
-      // We check BOTH the ID and the collection to update the correct row
       setUsers(users.map(u => 
         (u.id === userId && u.collection === collectionName) 
         ? { ...u, emailVerified: true } 
@@ -59,20 +59,58 @@ export default function VerificationManager() {
     }
   };
 
+  const togglePriority = async (userId, currentStatus) => {
+    try {
+      const creatorRef = doc(db, "creators", userId);
+      await updateDoc(creatorRef, {
+        isPriority: !currentStatus
+      });
+
+      setUsers(users.map(u => 
+        (u.id === userId && u.collection === "creators") 
+        ? { ...u, isPriority: !currentStatus } 
+        : u
+      ));
+
+      alert(currentStatus ? "Removed from Featured" : "Added to Featured!");
+    } catch (error) {
+      console.error("Error updating priority:", error);
+      alert("Failed to update priority status.");
+    }
+  };
+
+  const updateNiche = async (userId, newNiche) => {
+    try {
+      const creatorRef = doc(db, "creators", userId);
+      await updateDoc(creatorRef, {
+        niche: newNiche
+      });
+
+      setUsers(users.map(u => 
+        (u.id === userId && u.collection === "creators") 
+        ? { ...u, niche: newNiche } 
+        : u
+      ));
+    } catch (error) {
+      console.error("Error updating niche:", error);
+      alert("Failed to update niche.");
+    }
+  };
+
   const filteredUsers = users.filter(user => 
     user.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
     <div className="p-8 bg-[#fcfcfc] min-h-screen">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-4xl font-black text-gray-900 tracking-tighter italic uppercase">
               Security <span className="text-[#22c55e]">Clearance.</span>
             </h1>
-            <p className="text-sm text-gray-500 font-medium">Manually authorize institutional access for users.</p>
+            <p className="text-sm text-gray-500 font-medium">Manually authorize institutional access and classify talent.</p>
           </div>
           <div className="bg-black text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
             <ShieldCheck className="h-4 w-4 text-[#22c55e]" /> Admin Portal
@@ -97,6 +135,7 @@ export default function VerificationManager() {
               <tr className="bg-gray-50/50 border-b border-gray-100">
                 <th className="p-6 text-[10px] font-black uppercase tracking-widest text-gray-400">User Identity</th>
                 <th className="p-6 text-[10px] font-black uppercase tracking-widest text-gray-400">Classification</th>
+                <th className="p-6 text-[10px] font-black uppercase tracking-widest text-gray-400">Niche Assignment</th>
                 <th className="p-6 text-[10px] font-black uppercase tracking-widest text-gray-400">Auth Status</th>
                 <th className="p-6 text-[10px] font-black uppercase tracking-widest text-gray-400 text-right">Action</th>
               </tr>
@@ -104,16 +143,18 @@ export default function VerificationManager() {
             <tbody className="divide-y divide-gray-50">
               {loading ? (
                 <tr>
-                  <td colSpan="4" className="p-20 text-center text-sm font-bold text-gray-400 animate-pulse uppercase tracking-[0.2em]">
+                  <td colSpan="5" className="p-20 text-center text-sm font-bold text-gray-400 animate-pulse uppercase tracking-[0.2em]">
                     Scanning Database...
                   </td>
                 </tr>
               ) : filteredUsers.map((user) => (
-                /* FIXED KEY: Combined collection name and ID to ensure uniqueness */
                 <tr key={`${user.collection}-${user.id}`} className="hover:bg-gray-50/30 transition-colors">
                   <td className="p-6">
                     <div className="flex flex-col">
-                      <span className="text-sm font-black text-gray-900">{user.email || "Unknown Identity"}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-black text-gray-900">{user.email || "Unknown Identity"}</span>
+                        {user.isPriority && <Star className="h-3 w-3 text-[#22c55e] fill-[#22c55e]" />}
+                      </div>
                       <span className="text-[10px] font-mono text-gray-400 uppercase">{user.id}</span>
                     </div>
                   </td>
@@ -125,6 +166,28 @@ export default function VerificationManager() {
                       {user.collection}
                     </span>
                   </td>
+                  
+                  {/* NICHE DROPDOWN: Only for Creators */}
+                  <td className="p-6">
+                    {user.collection === 'creators' ? (
+                      <div className="relative group">
+                        <select 
+                          value={user.niche || ""}
+                          onChange={(e) => updateNiche(user.id, e.target.value)}
+                          className="appearance-none bg-gray-50 border border-gray-100 text-gray-900 text-[10px] font-black uppercase tracking-widest rounded-lg focus:ring-[#22c55e] focus:border-[#22c55e] block w-full p-2.5 outline-none cursor-pointer group-hover:bg-white transition-all"
+                        >
+                          <option value="" disabled>Select Niche</option>
+                          {niches.map((n) => (
+                            <option key={n} value={n}>{n}</option>
+                          ))}
+                        </select>
+                        <Tag className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-gray-400 pointer-events-none" />
+                      </div>
+                    ) : (
+                      <span className="text-[9px] font-black text-gray-200 uppercase italic">N/A</span>
+                    )}
+                  </td>
+
                   <td className="p-6">
                     {user.emailVerified ? (
                       <div className="flex items-center gap-1.5 text-[#22c55e] text-[10px] font-black uppercase tracking-widest">
@@ -136,15 +199,32 @@ export default function VerificationManager() {
                       </div>
                     )}
                   </td>
+                  
                   <td className="p-6 text-right">
-                    {!user.emailVerified && (
-                      <button 
-                        onClick={() => handleVerify(user.id, user.collection)}
-                        className="bg-black text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-tighter hover:bg-[#22c55e] transition-all active:scale-95"
-                      >
-                        Authorize
-                      </button>
-                    )}
+                    <div className="flex items-center justify-end gap-2">
+                      {user.collection === 'creators' && (
+                        <button 
+                          onClick={() => togglePriority(user.id, user.isPriority)}
+                          className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-tighter transition-all flex items-center gap-1 ${
+                            user.isPriority 
+                            ? 'bg-[#22c55e] text-white shadow-lg shadow-[#22c55e]/20' 
+                            : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+                          }`}
+                        >
+                          <Sparkles className={`h-3 w-3 ${user.isPriority ? 'text-white' : 'text-gray-400'}`} />
+                          {user.isPriority ? "Featured" : "Promote"}
+                        </button>
+                      )}
+
+                      {!user.emailVerified && (
+                        <button 
+                          onClick={() => handleVerify(user.id, user.collection)}
+                          className="bg-black text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-tighter hover:bg-[#22c55e] transition-all active:scale-95"
+                        >
+                          Authorize
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}

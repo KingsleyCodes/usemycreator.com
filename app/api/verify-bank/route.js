@@ -6,15 +6,29 @@ export async function GET(request) {
   const accountNumber = searchParams.get("accountNumber");
   const bankCode = searchParams.get("bankCode");
 
+  const SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
+
+  // Safety Check: If key is missing, don't even call Paystack
+  if (!SECRET_KEY) {
+    console.error("CRITICAL: PAYSTACK_SECRET_KEY is missing from .env.local");
+    return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
+  }
+
   // 1. FETCH BANK LIST
   if (type === "list") {
     try {
       const response = await fetch("https://api.paystack.co/bank?country=nigeria", {
         headers: {
-          Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+          Authorization: `Bearer ${SECRET_KEY.trim()}`, // .trim() removes accidental spaces
         },
       });
       const data = await response.json();
+      
+      if (!response.ok) {
+        console.log("Paystack Bank List Error:", data);
+        return NextResponse.json({ error: data.message }, { status: response.status });
+      }
+
       return NextResponse.json(data.data || []); 
     } catch (error) {
       return NextResponse.json({ error: "Failed to fetch banks" }, { status: 500 });
@@ -32,7 +46,7 @@ export async function GET(request) {
       {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+          Authorization: `Bearer ${SECRET_KEY.trim()}`,
           "Content-Type": "application/json",
         },
       }
@@ -40,11 +54,8 @@ export async function GET(request) {
 
     const data = await response.json();
 
-    // Debugging: This will show in your terminal exactly what Paystack said
-    console.log("Paystack Response:", data);
-
     if (!data.status) {
-      // If Paystack says no, return their specific message (e.g., "Could not resolve account name")
+      console.log("Paystack Resolution Error:", data);
       return NextResponse.json({ error: data.message }, { status: 400 });
     }
 

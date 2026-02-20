@@ -22,8 +22,9 @@ import { auth, db } from "@/lib/firebase";
 import GlobalNotification from "@/app/components/GlobalNotification";
 import CreatorNavbar from "@/app/components/CreatorNavbar";
 import CreatorPricingSettings from "@/app/components/dashboard/CreatorPricingSettings";
-
+import ProposalModal from "@/app/components/ProposalModal";
 import SubmissionModal from "@/app/components/SubmissionModal";
+
 import { 
   Sparkles, 
   Briefcase, 
@@ -37,8 +38,114 @@ import {
   Instagram,
   Youtube,
   Video,
-  ChevronRight
+  ChevronRight,
+  FileText,
+  CreditCard
 } from "lucide-react";
+
+// --- UPDATED RESPONSIVE PROFILE NUDGE (WITH BANK CHECK) ---
+const ProfileNudge = ({ userData, router }) => {
+  if (!userData) return null;
+
+  const checks = [
+    { 
+      id: 'bio', 
+      label: "Bio", 
+      isMet: !!userData?.bio && userData?.bio?.length > 5 
+    },
+    { 
+      id: 'platforms', 
+      label: "Socials", 
+      isMet: userData?.platforms?.length > 0 && Object.keys(userData?.socialLinks || {}).length > 0 
+    },
+    { 
+      id: 'bank', 
+      label: "Bank Info", // This looks for the bankDetails you set up in Settings
+      isMet: !!userData?.bankDetails?.accountNumber && !!userData?.bankDetails?.bankName 
+    },
+    { 
+      id: 'rates', 
+      label: "Rates", 
+      isMet: !!userData?.baseRate && userData?.baseRate > 0 
+    },
+  ];
+
+  const completed = checks.filter(c => c.isMet).length;
+  const percentage = Math.round((completed / checks.length) * 100);
+
+  // Once 100% complete, the nudge disappears to clean up the dashboard
+  if (percentage === 100) return null;
+
+  return (
+    <div className="mb-6 md:mb-10 bg-white border border-gray-100 rounded-3xl md:rounded-[2.5rem] p-5 md:p-8 shadow-sm relative overflow-hidden group">
+      <div className="absolute top-0 right-0 p-4 opacity-5 hidden sm:block group-hover:opacity-10 transition-opacity">
+        <Sparkles className="h-16 md:h-24 w-16 md:w-24 text-[#22c55e]" />
+      </div>
+
+      <div className="flex flex-col lg:flex-row items-center gap-4 md:gap-8">
+        
+        {/* Progress & Title Wrapper */}
+        <div className="flex items-center gap-4 w-full lg:w-auto">
+          <div className="relative h-14 w-14 md:h-20 md:w-20 flex items-center justify-center shrink-0">
+            <svg className="h-full w-full transform -rotate-90">
+              <circle cx="28" cy="28" r="24" stroke="currentColor" strokeWidth="4" fill="transparent" className="text-gray-100 sm:hidden" />
+              <circle cx="40" cy="40" r="35" stroke="currentColor" strokeWidth="6" fill="transparent" className="text-gray-100 hidden sm:block" />
+              
+              <circle
+                cx="28" cy="28" r="24" stroke="currentColor" strokeWidth="4" fill="transparent"
+                strokeDasharray={150.8}
+                strokeDashoffset={150.8 - (150.8 * percentage) / 100}
+                className="text-[#22c55e] transition-all duration-1000 ease-out sm:hidden"
+              />
+              <circle
+                cx="40" cy="40" r="35" stroke="currentColor" strokeWidth="6" fill="transparent"
+                strokeDasharray={219.9}
+                strokeDashoffset={219.9 - (219.9 * percentage) / 100}
+                className="text-[#22c55e] transition-all duration-1000 ease-out hidden sm:block"
+              />
+            </svg>
+            <span className="absolute text-sm md:text-lg font-black italic tracking-tighter">{percentage}%</span>
+          </div>
+
+          <div className="flex-1 lg:text-left">
+            <h2 className="text-lg md:text-xl font-black uppercase italic tracking-tighter text-gray-900 leading-none">
+              Setup <span className="text-[#22c55e]">Progress</span>
+            </h2>
+            <p className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">
+              {!userData?.bankDetails?.accountNumber ? "Add bank details to get paid." : "Complete profile to unlock deals."}
+            </p>
+          </div>
+        </div>
+
+        {/* Checklist */}
+        <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-2 w-full lg:flex-1 border-y lg:border-none border-gray-100 py-3 lg:py-0">
+          {checks.map((check) => (
+            <div key={check.id} className="flex items-center gap-2">
+              <div className={`h-2 w-2 rounded-full shrink-0 ${check.isMet ? 'bg-[#22c55e]' : 'bg-gray-200'}`} />
+              <span className={`text-[9px] font-black uppercase tracking-tighter truncate ${check.isMet ? 'text-gray-900' : 'text-gray-400'}`}>
+                {check.label}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        {/* Action Button */}
+        <button 
+          onClick={() => {
+            // Smart routing: if bank is missing, go to settings. Otherwise go to profile.
+            const targetPath = !userData?.bankDetails?.accountNumber 
+              ? '/dashboard/creator/settings' 
+              : '/dashboard/creator/profile';
+            router.push(targetPath);
+          }}
+          className="w-full lg:w-auto bg-black text-white px-6 md:px-8 py-3 md:py-4 rounded-2xl font-black text-[9px] md:text-[10px] uppercase tracking-[0.2em] hover:bg-[#22c55e] hover:text-black transition-all shadow-xl active:scale-95 flex items-center justify-center gap-3"
+        >
+          {percentage > 75 ? "Almost There" : "Finish Setup"} <ArrowRight className="h-4 w-4" />
+        </button>
+      </div>
+    </div>
+  );
+};
 
 export default function CreatorDashboard() {
   const router = useRouter();
@@ -47,11 +154,12 @@ export default function CreatorDashboard() {
   const [appliedCampaigns, setAppliedCampaigns] = useState({});
   const [activeChats, setActiveChats] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [applyingId, setApplyingId] = useState(null);
 
   // MODAL STATES
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
   const [activeCampaignForSubmission, setActiveCampaignForSubmission] = useState(null);
+  const [isProposalModalOpen, setIsProposalModalOpen] = useState(false);
+  const [selectedCampaignForProposal, setSelectedCampaignForProposal] = useState(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -61,13 +169,13 @@ export default function CreatorDashboard() {
       }
 
       try {
-        // 1. Fetch Creator Profile
-        const userDoc = await getDoc(doc(db, "creators", user.uid));
-        if (userDoc.exists()) {
-          setUserData(userDoc.data());
-        }
+        // REAL-TIME USER DATA LISTENER
+        const unsubscribeUser = onSnapshot(doc(db, "creators", user.uid), (doc) => {
+          if (doc.exists()) {
+            setUserData(doc.data());
+          }
+        });
 
-        // 2. Fetch AVAILABLE & ASSIGNED campaigns
         const campaignQuery = query(
           collection(db, "campaigns"),
           where("status", "in", ["live", "open", "assigned", "in_review", "completed"]) 
@@ -81,19 +189,19 @@ export default function CreatorDashboard() {
           setCampaigns(campaignList);
         });
 
-        // 3. Fetch creator's applications
         const appQuery = query(
           collection(db, "applications"),
           where("creatorId", "==", user.uid)
         );
-        const appSnap = await getDocs(appQuery);
-        const appliedMap = {};
-        appSnap.docs.forEach((doc) => {
-          appliedMap[doc.data().campaignId] = doc.data().status;
+        
+        const unsubscribeApps = onSnapshot(appQuery, (appSnap) => {
+            const appliedMap = {};
+            appSnap.docs.forEach((doc) => {
+              appliedMap[doc.data().campaignId] = doc.data().status;
+            });
+            setAppliedCampaigns(appliedMap);
         });
-        setAppliedCampaigns(appliedMap);
 
-        // 4. REAL-TIME CHAT LISTENER (Sorted by Recency)
         const chatQuery = query(
           collection(db, "chats"),
           where("participants", "array-contains", user.uid),
@@ -106,8 +214,10 @@ export default function CreatorDashboard() {
 
         setLoading(false);
         return () => {
+          unsubscribeUser();
           unsubscribeChats();
           unsubscribeCampaigns();
+          unsubscribeApps();
         };
 
       } catch (err) {
@@ -119,11 +229,9 @@ export default function CreatorDashboard() {
     return () => unsubscribe();
   }, [router]);
 
-  // NEW: HANDLE RATE UPDATES
   const handleRateSave = async (data) => {
     const user = auth.currentUser;
     if (!user) return;
-
     try {
       const creatorRef = doc(db, "creators", user.uid);
       await updateDoc(creatorRef, {
@@ -132,15 +240,6 @@ export default function CreatorDashboard() {
         baseRate: data.baseRate,
         pricingLastUpdated: serverTimestamp()
       });
-      
-      // Update local state to reflect changes immediately
-      setUserData(prev => ({
-        ...prev,
-        avgViews: data.avgViews,
-        niche: data.niche,
-        baseRate: data.baseRate
-      }));
-
       alert("Market rates updated successfully!");
     } catch (err) {
       console.error("Rate update error:", err);
@@ -148,50 +247,9 @@ export default function CreatorDashboard() {
     }
   };
 
-  const applyToCampaign = async (campaignId) => {
-    const user = auth.currentUser;
-    if (!user) return;
-    try {
-      setApplyingId(campaignId);
-      const targetCampaign = campaigns.find(c => c.id === campaignId);
-      
-      await addDoc(collection(db, "applications"), {
-        campaignId,
-        creatorId: user.uid,
-        status: "pending",
-        appliedAt: serverTimestamp(),
-        businessId: targetCampaign.businessId 
-      });
-
-      const businessDoc = await getDoc(doc(db, "businesses", targetCampaign.businessId));
-      
-      if (businessDoc.exists()) {
-        const businessData = businessDoc.data();
-        
-        fetch('/api/notify-application', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            businessEmail: businessData.email || businessData.contactEmail,
-            businessName: businessData.companyName || businessData.name,
-            creatorName: userData?.name || "A verified creator",
-            campaignTitle: targetCampaign.title
-          }),
-        }).catch(err => console.error("Notification trigger failed:", err));
-      }
-      
-      setAppliedCampaigns((prev) => ({
-        ...prev,
-        [campaignId]: "pending",
-      }));
-
-      alert("Application sent successfully. The brand has been notified!");
-    } catch (err) {
-      console.error("Apply error:", err);
-      alert("Failed to submit proposal.");
-    } finally {
-      setApplyingId(null);
-    }
+  const handleOpenProposal = (campaign) => {
+    setSelectedCampaignForProposal(campaign);
+    setIsProposalModalOpen(true);
   };
 
   const getPlatformIcon = (platform) => {
@@ -218,15 +276,18 @@ export default function CreatorDashboard() {
       <GlobalNotification targetType="creators" />
       <CreatorNavbar creatorName={userData?.name} balance={userData?.balance || 0} />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-12">
         
+        {/* UPDATED NUDGE: TRACKS BANK & PROFILE INFO */}
+        <ProfileNudge userData={userData} router={router} />
+
         {/* HERO SECTION */}
         <div className="mb-12">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                    <div className="h-2 w-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                    <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Active Marketplace</span>
+                    <div className="h-2 w-2 bg-[#22c55e] rounded-full animate-pulse"></div>
+                    <span className="text-[10px] font-bold text-[#22c55e] uppercase tracking-widest">Active Marketplace</span>
                 </div>
                 <h1 className="text-3xl md:text-5xl font-serif font-medium leading-tight">
                     Find your next <span className="text-gray-400">partnership.</span>
@@ -284,13 +345,13 @@ export default function CreatorDashboard() {
           </div>
         </div>
 
-        {/* PHASE 2: INTEGRATED PRICING TOOL */}
+        {/* INTEGRATED PRICING TOOL */}
         <div className="mb-12">
           <CreatorPricingSettings 
             initialData={{
               avgViews: userData?.avgViews,
               niche: userData?.niche,
-              isVerified: true // Assuming verified based on your UI badge above
+              isVerified: true
             }}
             onSave={handleRateSave} 
           />
@@ -298,7 +359,6 @@ export default function CreatorDashboard() {
 
         {/* OPPORTUNITIES GRID */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          
           <div className="lg:col-span-8 space-y-4">
             <div className="flex items-center justify-between mb-4 px-2">
                 <h3 className="text-xs font-black uppercase tracking-[0.2em] text-gray-900 flex items-center gap-2">
@@ -328,12 +388,12 @@ export default function CreatorDashboard() {
                                     {c.platform}
                                 </div>
                                 {isFunded && (
-                                    <div className="bg-emerald-50 text-emerald-700 border border-emerald-100 text-[10px] font-bold px-3 py-1 rounded-full flex items-center gap-1">
+                                    <div className="bg-[#22c55e]/10 text-[#2299cc] border border-[#22c55e]/20 text-[10px] font-bold px-3 py-1 rounded-full flex items-center gap-1">
                                         <CheckCircle2 className="h-3 w-3" /> Escrow Locked
                                     </div>
                                 )}
                                 {isAssignedToMe && (
-                                    <div className="bg-[#22c55e]/20 text-black border border-[#22c55e]/30 text-[10px] font-black px-3 py-1 rounded-full uppercase italic">
+                                    <div className="bg-[#22c55e] text-black border border-[#22c55e] text-[10px] font-black px-3 py-1 rounded-full uppercase italic">
                                         Your Project
                                     </div>
                                 )}
@@ -381,23 +441,23 @@ export default function CreatorDashboard() {
                                       {status ? (
                                         <div className={`flex items-center justify-center gap-2 px-8 py-3.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
                                           status === "pending" ? "bg-amber-50 text-amber-600 border-amber-100" : 
-                                          status === "accepted" ? "bg-emerald-50 text-emerald-600 border-emerald-100" : 
+                                          status === "accepted" ? "bg-[#22c55e]/10 text-[#2299cc] border-[#22c55e]/20" : 
                                           "bg-red-50 text-red-600 border-red-100"
                                         }`}>
                                           Proposal {status}
                                         </div>
                                       ) : (
                                         <button
-                                          onClick={() => applyToCampaign(c.id)}
-                                          disabled={applyingId === c.id || !isFunded || c.status !== "open"}
+                                          onClick={() => handleOpenProposal(c)}
+                                          disabled={!isFunded || c.status !== "open"}
                                           className={`w-full sm:w-auto px-8 py-3.5 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
                                             isFunded && c.status === "open"
                                             ? "bg-black text-white hover:bg-gray-800 shadow-lg" 
                                             : "bg-gray-100 text-gray-400 cursor-not-allowed"
                                           }`}
                                         >
-                                          {applyingId === c.id ? <Loader2 className="h-3 w-3 animate-spin" /> : "Submit Proposal"}
-                                          <ArrowRight className="h-3 w-3" />
+                                          Submit Proposal
+                                          <FileText className="h-3 w-3" />
                                         </button>
                                       )}
                                   </>
@@ -419,7 +479,7 @@ export default function CreatorDashboard() {
                     <div className="flex justify-between items-center">
                         <span className="text-xs font-medium text-gray-500">Response Rate</span>
                         <div className="text-right">
-                          <span className="text-xs font-bold text-emerald-600 block">100%</span>
+                          <span className="text-xs font-bold text-[#22c55e] block">100%</span>
                           <span className="text-[9px] text-gray-400 uppercase font-bold">Excellent</span>
                         </div>
                     </div>
@@ -446,7 +506,18 @@ export default function CreatorDashboard() {
         </div>
       </main>
 
-      {/* SUBMISSION MODAL INTEGRATION */}
+      {/* MODAL INTEGRATIONS */}
+      {selectedCampaignForProposal && (
+        <ProposalModal 
+          isOpen={isProposalModalOpen}
+          onClose={() => {
+            setIsProposalModalOpen(false);
+            setSelectedCampaignForProposal(null);
+          }}
+          campaign={selectedCampaignForProposal}
+        />
+      )}
+
       {activeCampaignForSubmission && (
         <SubmissionModal 
             isOpen={isSubmitModalOpen}

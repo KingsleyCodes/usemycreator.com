@@ -113,15 +113,15 @@ export default function BankSettings() {
       const userRef = doc(db, "creators", auth.currentUser.uid);
       await updateDoc(userRef, {
         bankDetails: bankData,
-        profileUpdated: true // Helpful for your upcoming "Profile Completion" feature
+        profileUpdated: true 
       });
       
       setIsSuccess(true);
       
-      // Auto-redirect after 2.5 seconds
+      // UPDATED: Redirects directly back to the main dashboard after 2 seconds
       setTimeout(() => {
-        router.push("/dashboard/creator/wallet");
-      }, 2500);
+        router.push("/dashboard");
+      }, 2000);
 
     } catch (err) {
       console.error(err);
@@ -142,20 +142,20 @@ export default function BankSettings() {
   // SUCCESS VIEW
   if (isSuccess) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center p-6 animate-in fade-in duration-500">
+      <div className="min-h-screen bg-white flex items-center justify-center p-6 animate-in fade-in zoom-in duration-500">
         <div className="max-w-md w-full text-center">
-          <div className="h-24 w-24 bg-[#22c55e] text-black rounded-[2.5rem] flex items-center justify-center mx-auto mb-8 shadow-[0_20px_50px_rgba(34,197,94,0.3)] animate-bounce">
+          <div className="h-24 w-24 bg-[#22c55e] text-black rounded-[2.5rem] flex items-center justify-center mx-auto mb-8 shadow-[0_20px_50px_rgba(163,220,243,0.3)] animate-bounce">
             <CheckCircle className="w-12 h-12" />
           </div>
           <h1 className="text-4xl font-black tracking-tighter uppercase italic mb-4">
             Payout Locked<span className="text-[#22c55e]">.</span>
           </h1>
           <p className="text-gray-400 text-[10px] font-black uppercase tracking-[0.2em] mb-10 leading-relaxed">
-            Your bank details have been securely encrypted and saved to your creator profile.
+            Your bank details have been securely saved. You are now ready to receive payments.
           </p>
-          <div className="flex items-center justify-center gap-2 text-[#22c55e] font-black text-[10px] uppercase tracking-widest">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Returning to Wallet
+          <div className="flex items-center justify-center gap-2 text-gray-900 font-black text-[10px] uppercase tracking-widest">
+            <Loader2 className="h-4 w-4 animate-spin text-[#22c55e]" />
+            Returning to Dashboard
           </div>
         </div>
       </div>
@@ -165,8 +165,8 @@ export default function BankSettings() {
   return (
     <div className="min-h-screen bg-[#fcfcfc] p-6 font-sans antialiased">
       <nav className="max-w-xl mx-auto mb-12">
-        <button onClick={() => router.back()} className="group flex items-center gap-2 text-gray-400 hover:text-black font-black text-[10px] uppercase tracking-widest transition-all">
-          <span className="group-hover:-translate-x-1 transition-transform">←</span> Return to Wallet
+        <button onClick={() => router.push('/dashboard')} className="group flex items-center gap-2 text-gray-400 hover:text-black font-black text-[10px] uppercase tracking-widest transition-all">
+          <span className="group-hover:-translate-x-1 transition-transform">←</span> Back to Dashboard
         </button>
       </nav>
 
@@ -252,7 +252,7 @@ export default function BankSettings() {
             <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-4 mb-2 block">Resolution Result</label>
             <div className={`w-full p-6 rounded-[1.5rem] border-2 font-black text-xs flex items-center justify-between transition-all duration-500 ${
               bankData.accountName && bankData.accountName !== "Verification Failed" 
-                ? 'bg-[#22c55e]/5 border-[#22c55e]/20 text-[#22c55e]' 
+                ? 'bg-[#22c55e]/10 border-[#22c55e]/20 text-gray-900' 
                 : bankData.accountName === "Verification Failed"
                 ? 'bg-red-50 border-red-100 text-red-600'
                 : 'bg-gray-50 border-transparent text-gray-300'
